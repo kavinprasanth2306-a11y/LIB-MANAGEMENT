@@ -204,6 +204,18 @@ class CircularLinkedList:
     def get_current(self):
         return self.current.data if self.current else None
 
+    def to_list(self):
+        if not self.head:
+            return []
+        res = []
+        curr = self.head
+        while True:
+            res.append(curr.data)
+            curr = curr.next
+            if curr == self.head:
+                break
+        return res
+
     def get_pointer_chain(self, max_display: int = 10):
         if not self.head:
             return {"type": "CircularLinkedList", "length": 0, "nodes": []}
