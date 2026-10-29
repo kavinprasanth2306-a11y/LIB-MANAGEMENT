@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LuminaLib — DSA Glassmorphism Library Management System</title>
+  
+  <!-- Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"Fira Code"', 'monospace'],
+          },
+          colors: {
+            primary: {
+              50: '#EEF2FF',
+              100: '#E0E7FF',
+              500: '#6366F1',
+              600: '#4F46E5',
+              700: '#4338CA',
+            },
+            slate: {
+              850: '#151F32',
+              900: '#0F172A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Light Mode Glassmorphism Styling */
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F8FAFC;
+      color: #0F172A;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Pastel Gradient Orbs */
+    .orb-blue {
+      position: fixed;
+      top: -10%;
+      left: 15%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(147, 197, 253, 0.45) 0%, rgba(219, 234, 254, 0.1) 70%, transparent 100%);
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+      animation: floatSlow 20s infinite alternate ease-in-out;
+    }
+
+    .orb-purple {
+      position: fixed;
+      top: 35%;
+      right: 5%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(196, 181, 253, 0.4) 0%, rgba(237, 233, 254, 0.1) 70%, transparent 100%);
+      filter: blur(90px);
+      z-index: 0;
+      pointer-events: none;
+      animation: floatSlow 24s infinite alternate-reverse ease-in-out;
+    }
+
+    .orb-mint {
+      position: fixed;
+      bottom: -10%;
+      left: 25%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(167, 243, 208, 0.4) 0%, rgba(209, 250, 229, 0.1) 70%, transparent 100%);
+      filter: blur(80px);
+      z-index: 0;
+      pointer-events: none;
+      animation: floatSlow 22s infinite alternate ease-in-out;
+    }
+
+    @keyframes floatSlow {
+      0% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(30px) scale(1.05); }
+      100% { transform: translateY(-20px) scale(0.95); }
+    }
+
+    /* Glassmorphism Classes */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 10px 32px 0 rgba(31, 38, 135, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    .glass-card-hover {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px 0 rgba(79, 70, 229, 0.1), 0 2px 6px 0 rgba(0, 0, 0, 0.04);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .glass-sidebar {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 4px 0 24px 0 rgba(31, 38, 135, 0.03);
+    }
+
+    .glass-input {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(203, 213, 225, 0.7);
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+    .glass-input:focus {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: #6366F1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      outline: none;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    /* Node Badge for Linked List & Trees */
+    .dsa-node-pill {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+  </style>
+</head>
+<body class="relative min-h-screen flex flex-col antialiased">
+
+  <!-- Ambient Blurred Pastel Orbs -->
+  <div class="orb-blue"></div>
+  <div class="orb-purple"></div>
+  <div class="orb-mint"></div>
+
+  <!-- Toast Notification Center -->
+  <div id="toast-center" class="fixed top-5 right-5 z-50 flex flex-col space-y-2.5 pointer-events-none"></div>
+
+  <!-- Main Application Layout -->
+  <div class="relative z-10 flex flex-1 h-screen overflow-hidden">
+
+    <!-- 1. FROSTED GLASS SIDEBAR -->
+    <aside class="w-64 glass-sidebar flex flex-col justify-between p-5 select-none shrink-0">
+      <div class="space-y-6">
+        <!-- Logo & Branding -->
+        <div class="flex items-center space-x-3 px-2">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 text-white">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="font-extrabold text-base tracking-tight text-slate-900 leading-none">LuminaLib</h1>
+            <p class="text-[11px] font-semibold text-indigo-600 tracking-wide uppercase mt-1 font-mono">DSA Core v2.0</p>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="space-y-1.5" id="sidebar-nav">
+          <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all bg-indigo-50 text-indigo-600 border border-indigo-100/60 shadow-sm">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            <span>Dashboard</span>
+          </button>
+          <button onclick="navigateTo('catalog')" id="nav-catalog" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-white/60">
+            <i data-lucide="library" class="w-4 h-4"></i>
+            <span>Book Catalog</span>
+          </button>
+          <button onclick="navigateTo('desk')" id="nav-desk" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-white/60">
+            <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+            <span>Issue & Return Desk</span>
+          </button>
+          <button onclick="navigateTo('waitlist')" id="nav-waitlist" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-white/60">
+            <i data-lucide="list-ordered" class="w-4 h-4"></i>
+            <span>Waitlist Queue</span>
+          </button>
+          <button onclick="navigateTo('history')" id="nav-history" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-white/60">
+            <i data-lucide="history" class="w-4 h-4"></i>
+            <span>Borrower Log (DLL)</span>
+          </button>
+          <button onclick="navigateTo('visualizer')" id="nav-visualizer" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-white/60">
+            <i data-lucide="cpu" class="w-4 h-4 text-purple-600"></i>
+            <span class="text-purple-700 font-semibold">DSA Visualizer</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Quick Action: Stack Undo & Metrics -->
+      <div class="space-y-3">
+        <button onclick="executeUndoAction()" class="w-full flex items-center justify-center space-x-2 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 rounded-xl text-xs font-bold transition shadow-sm">
+          <i data-lucide="undo-2" class="w-4 h-4"></i>
+          <span>Undo Last Action (Stack)</span>
+        </button>
+
+        <div class="p-3 bg-white/70 rounded-xl border border-white text-[11px] space-y-1 font-mono text-slate-500">
+          <div class="flex justify-between">
+            <span>Stack Depth:</span>
+            <span id="sidebar-stack-count" class="font-bold text-slate-900">0</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Hash Entries:</span>
+            <span id="sidebar-hash-count" class="font-bold text-indigo-600">14</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col overflow-y-auto">
+
+      <!-- Top Header / Search Navigation Bar -->
+      <header class="glass-card sticky top-0 z-40 px-8 py-3.5 flex items-center justify-between border-b border-white/80 shrink-0">
+        <!-- Live Autocomplete Trie Search Bar -->
+        <div class="relative w-full max-w-lg">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+            <input 
+              id="global-search-input"
+              type="text"
+              placeholder="Search by Title, Author, or Tag (Trie $O(L)$ Autocomplete)..."
+              oninput="handleSearchInput(this.value)"
+              class="w-full pl-10 pr-4 py-2 glass-input rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400"
+            />
+          </div>
+
+          <!-- Autocomplete Dropdown -->
+          <div id="trie-autocomplete-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl z-50 p-2 space-y-1 max-h-72 overflow-y-auto border border-slate-200/90 ring-1 ring-black/5">
+            <!-- Autocomplete list rendered here -->
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-3">
+          <button onclick="openAddBookModal()" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Add Book</span>
+          </button>
+          <div class="w-9 h-9 rounded-xl bg-white border border-slate-200/80 shadow-sm flex items-center justify-center font-bold text-xs text-indigo-600">
+            AD
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Main Container -->
+      <div class="p-8 space-y-8 flex-1">
+
+        <!-- ======================================================== -->
+        <!-- VIEW 1: DASHBOARD -->
+        <!-- ======================================================== -->
+        <section id="view-dashboard" class="space-y-6">
+          <!-- Metric Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="glass-card glass-card-hover p-5 rounded-2xl">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Catalog</span>
+                <span class="p-2 rounded-xl bg-indigo-50 text-indigo-600"><i data-lucide="book-copy" class="w-4 h-4"></i></span>
+              </div>
+              <p id="metric-total-books" class="text-2xl font-extrabold text-slate-900 mt-2 font-mono">14</p>
+              <p class="text-[11px] text-slate-500 mt-1 font-medium">Stored in <span class="font-mono text-indigo-600">HashMap (h(k))</span></p>
+            </div>
+
+            <div class="glass-card glass-card-hover p-5 rounded-2xl">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Available Books</span>
+                <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+              </div>
+              <p id="metric-available-books" class="text-2xl font-extrabold text-emerald-600 mt-2 font-mono">11</p>
+              <p class="text-[11px] text-slate-500 mt-1 font-medium">Ready for immediate checkout</p>
+            </div>
+
+            <div class="glass-card glass-card-hover p-5 rounded-2xl">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Waitlist Queue</span>
+                <span class="p-2 rounded-xl bg-amber-50 text-amber-600"><i data-lucide="users" class="w-4 h-4"></i></span>
+              </div>
+              <p id="metric-waitlist-count" class="text-2xl font-extrabold text-amber-600 mt-2 font-mono">3</p>
+              <p class="text-[11px] text-slate-500 mt-1 font-medium">Managed via <span class="font-mono text-amber-600">FIFO Queue</span></p>
+            </div>
+
+            <div class="glass-card glass-card-hover p-5 rounded-2xl">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Undo Stack</span>
+                <span class="p-2 rounded-xl bg-rose-50 text-rose-600"><i data-lucide="layers" class="w-4 h-4"></i></span>
+              </div>
+              <p id="metric-stack-depth" class="text-2xl font-extrabold text-rose-600 mt-2 font-mono">0</p>
+              <p class="text-[11px] text-slate-500 mt-1 font-medium">Reversible actions in <span class="font-mono text-rose-600">LIFO Stack</span></p>
+            </div>
+          </div>
+
+          <!-- Recently Viewed & Bidirectional Navigator (Doubly Linked List) -->
+          <div class="glass-card p-6 rounded-2xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200/60 gap-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                  <span>Recently Viewed Books Navigator</span>
+                  <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-mono font-bold">DoublyLinkedList</span>
+                </h3>
+                <p class="text-xs text-slate-500">Traverse your active browsing session backward and forward in $O(1)$ time.</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="navigateDll('prev')" class="px-3 py-1.5 glass-card glass-card-hover rounded-xl text-xs font-bold text-slate-700 flex items-center space-x-1">
+                  <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                  <span>Previous</span>
+                </button>
+                <button onclick="navigateDll('next')" class="px-3 py-1.5 glass-card glass-card-hover rounded-xl text-xs font-bold text-slate-700 flex items-center space-x-1">
+                  <span>Next</span>
+                  <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Visual Node Chain -->
+            <div id="dll-horizontal-chain" class="flex items-center space-x-2 overflow-x-auto py-2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Catalog Quick View Preview -->
+          <div class="glass-card p-6 rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-slate-900">Featured Catalog Spotlight</h3>
+              <button onclick="navigateTo('catalog')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1">
+                <span>View Full Catalog</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <div id="dashboard-catalog-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ======================================================== -->
+        <!-- VIEW 2: BOOK CATALOG & MULTI-SORT -->
+        <!-- ======================================================== -->
+        <section id="view-catalog" class="hidden space-y-6">
+          <div class="glass-card p-6 rounded-2xl space-y-5">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200/60">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Master Book Catalog</h2>
+                <p class="text-xs text-slate-500">Sorted using custom <span class="font-mono text-indigo-600 font-bold">Merge Sort / Quick Sort</span> algorithms from scratch.</p>
+              </div>
+
+              <!-- Sorting Controls -->
+              <div class="flex items-center space-x-2">
+                <select id="catalog-sort-field" class="glass-input text-xs font-semibold rounded-xl px-3 py-2 text-slate-700">
+                  <option value="title">Sort by Title</option>
+                  <option value="author">Sort by Author</option>
+                  <option value="year">Sort by Year</option>
+                  <option value="availableCopies">Sort by Available Copies</option>
+                </select>
+                <select id="catalog-sort-algo" class="glass-input text-xs font-semibold rounded-xl px-3 py-2 text-slate-700 font-mono">
+                  <option value="merge">Merge Sort O(N log N)</option>
+                  <option value="quick">Quick Sort O(N log N)</option>
+                </select>
+                <button onclick="triggerCatalogSort()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center space-x-1.5">
+                  <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i>
+                  <span>Sort Catalog</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sort Operation Metrics Badge -->
+            <div id="sort-metrics-box" class="hidden p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-xs font-mono text-indigo-800 flex items-center justify-between">
+              <span id="sort-metrics-content"></span>
+              <button onclick="document.getElementById('sort-metrics-box').classList.add('hidden')" class="text-indigo-400 hover:text-indigo-900">&times;</button>
+            </div>
+
+            <!-- Catalog Cards Grid -->
+            <div id="full-catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ======================================================== -->
+        <!-- VIEW 3: ISSUE & RETURN DESK -->
+        <!-- ======================================================== -->
+        <section id="view-desk" class="hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Issue Desk Card -->
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+              <div class="flex items-center space-x-3 pb-3 border-b border-slate-200/60">
+                <div class="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+                  <i data-lucide="book-up" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Issue Book to Member</h3>
+                  <p class="text-xs text-slate-500">Auto-checks stock. If 0, offers FIFO waitlist placement.</p>
+                </div>
+              </div>
+
+              <div class="space-y-3 text-xs">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Select Book (Search by ISBN/Title)</label>
+                  <select id="desk-issue-book-select" class="w-full glass-input rounded-xl p-2.5 text-slate-800 font-medium">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Member ID</label>
+                  <select id="desk-issue-member-select" class="w-full glass-input rounded-xl p-2.5 text-slate-800 font-medium">
+                    <option value="MEM101">MEM101 - Alan Turing</option>
+                    <option value="MEM102">MEM102 - Ada Lovelace</option>
+                    <option value="MEM103">MEM103 - Grace Hopper</option>
+                    <option value="MEM104">MEM104 - Linus Torvalds</option>
+                    <option value="MEM105">MEM105 - Barbara Liskov</option>
+                  </select>
+                </div>
+                <button onclick="handleIssueSubmit()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-600/20 transition flex items-center justify-center space-x-2">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  <span>Confirm Checkout</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Return Desk Card -->
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+              <div class="flex items-center space-x-3 pb-3 border-b border-slate-200/60">
+                <div class="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                  <i data-lucide="book-down" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900">Return Book Check-in</h3>
+                  <p class="text-xs text-slate-500">Auto-assigns returned book to next member in the FIFO Queue.</p>
+                </div>
+              </div>
+
+              <div class="space-y-3 text-xs">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Select Book to Return</label>
+                  <select id="desk-return-book-select" class="w-full glass-input rounded-xl p-2.5 text-slate-800 font-medium">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Returning Member ID</label>
+                  <input id="desk-return-member" type="text" value="MEM101" class="w-full glass-input rounded-xl p-2.5 text-slate-800 font-mono" />
+                </div>
+                <button onclick="handleReturnSubmit()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md shadow-emerald-600/20 transition flex items-center justify-center space-x-2">
+                  <i data-lucide="inbox" class="w-4 h-4"></i>
+                  <span>Process Return</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- ======================================================== -->
+        <!-- VIEW 4: WAITLIST QUEUE (FIFO) -->
+        <!-- ======================================================== -->
+        <section id="view-waitlist" class="hidden space-y-6">
+          <div class="glass-card p-6 rounded-2xl space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200/60">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Out-of-Stock Reservation Queues (FIFO)</h2>
+                <p class="text-xs text-slate-500">When loaned-out books are returned, the head of the queue is immediately allocated the copy.</p>
+              </div>
+              <span class="text-xs font-mono font-bold px-3 py-1 rounded-xl bg-amber-50 text-amber-700 border border-amber-200">
+                Queue ADT Enqueue / Dequeue
+              </span>
+            </div>
+
+            <div id="waitlist-queues-container" class="space-y-4">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ======================================================== -->
+        <!-- VIEW 5: BORROWER LOG (DOUBLY LINKED LIST) -->
+        <!-- ======================================================== -->
+        <section id="view-history" class="hidden space-y-6">
+          <div class="glass-card p-6 rounded-2xl space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200/60">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Chronological Borrower Transaction History</h2>
+                <p class="text-xs text-slate-500">Maintained as a pointer-based <span class="font-mono text-indigo-600 font-bold">DoublyLinkedList</span> with bidirectional references.</p>
+              </div>
+            </div>
+
+            <div id="history-transactions-list" class="space-y-2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ======================================================== -->
+        <!-- VIEW 6: DSA VISUALIZER INSPECTOR (CRUCIAL COMPONENT) -->
+        <!-- ======================================================== -->
+        <section id="view-visualizer" class="hidden space-y-6">
+          <div class="glass-card p-6 rounded-2xl space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200/60 gap-3">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+                  <i data-lucide="cpu" class="w-5 h-5 text-indigo-600"></i>
+                  <span>Interactive Real-Time DSA Inspector</span>
+                </h2>
+                <p class="text-xs text-slate-500">Live memory layout of the scratch Hash Table, Undo Stack, and FIFO Queues.</p>
+              </div>
+              <button onclick="renderDsaVisualizer()" class="px-3.5 py-1.5 glass-card glass-card-hover rounded-xl text-xs font-bold text-indigo-600 flex items-center space-x-1.5">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Refresh Memory State</span>
+              </button>
+            </div>
+
+            <!-- Visualizer 1: Hash Table with Separate Chaining Buckets -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    1. Hash Table Separate Chaining (Capacity = 11, $h(ISBN) = \sum charCode \pmod{11}$)
+                  </h3>
+                  <p class="text-[11px] text-slate-400">Shows collision resolution via linked-list buckets.</p>
+                </div>
+                <span id="vis-ht-metrics" class="text-[11px] font-mono text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-100">
+                  Size: 14 | Load Factor: 1.27
+                </span>
+              </div>
+
+              <div id="vis-hash-table-buckets" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Visualizer 2: Stack ADT (LIFO) & Queue ADT (FIFO) Side-by-Side -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+
+              <!-- Stack LIFO -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    2. Action Undo Stack ADT (LIFO)
+                  </h3>
+                  <span id="vis-stack-count" class="text-[11px] font-mono text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">0 Elements</span>
+                </div>
+                <div id="vis-stack-container" class="p-4 bg-slate-50/70 rounded-xl border border-slate-200 min-h-[160px] flex flex-col-reverse gap-2">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- Waitlist FIFO Queue -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    3. Out-of-Stock Waitlists (FIFO Queues)
+                  </h3>
+                  <span class="text-[11px] font-mono text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">Head -> Next -> Rear</span>
+                </div>
+                <div id="vis-queue-container" class="p-4 bg-slate-50/70 rounded-xl border border-slate-200 min-h-[160px] space-y-3">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD NEW BOOK -->
+  <!-- ======================================================== -->
+  <div id="modal-add-book" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-6 rounded-3xl space-y-4 shadow-2xl border border-white">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200/60">
+        <h3 class="text-sm font-extrabold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="book-plus" class="w-4 h-4 text-indigo-600"></i>
+          <span>Add Book to Scratch Data Structures</span>
+        </h3>
+        <button onclick="closeAddBookModal()" class="text-slate-400 hover:text-slate-700">&times;</button>
+      </div>
+
+      <form onsubmit="handleAddBookSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Book Title</label>
+          <input required id="add-book-title" type="text" placeholder="e.g. Concrete Mathematics" class="w-full glass-input rounded-xl p-2.5 text-slate-900 font-medium" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Author</label>
+          <input required id="add-book-author" type="text" placeholder="e.g. Ronald Graham, Donald Knuth" class="w-full glass-input rounded-xl p-2.5 text-slate-900 font-medium" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">ISBN</label>
+            <input required id="add-book-isbn" type="text" placeholder="978-0201558029" class="w-full glass-input rounded-xl p-2.5 text-slate-900 font-mono" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Year</label>
+            <input required id="add-book-year" type="number" value="1994" class="w-full glass-input rounded-xl p-2.5 text-slate-900 font-mono" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Total Copies</label>
+            <input required id="add-book-copies" type="number" min="1" value="3" class="w-full glass-input rounded-xl p-2.5 text-slate-900 font-mono" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Category</label>
+            <select id="add-book-category" class="w-full glass-input rounded-xl p-2.5 text-slate-900 font-medium">
+              <option value="Computer Science">Computer Science</option>
+              <option value="Algorithms">Algorithms</option>
+              <option value="Software Architecture">Software Architecture</option>
+              <option value="Artificial Intelligence">Artificial Intelligence</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-200/60">
+          <button type="button" onclick="closeAddBookModal()" class="px-4 py-2 text-slate-600 hover:text-slate-900 rounded-xl font-bold">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-600/20">Add Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT: DATA STRUCTURES & APPLICATION LOGIC -->
+  <!-- ======================================================== -->
+  <script>
+    /**
+     * LuminaLib — Data Structures & Algorithms Core Implementation
+     * Implemented strictly from scratch in ES6+ Classes.
+     */
+
+    // =========================================================
+    // 1. HASH TABLE WITH SEPARATE CHAINING (LINKED LIST BUCKETS)
+    // =========================================================
+    class HashNode {
+      constructor(key, value, next = null) {
+        this.key = key;      // String (e.g. ISBN or MemberID)
+        this.value = value;  // Object payload
+        this.next = next;    // HashNode pointer
+      }
+    }
+
+    class HashTable {
+      constructor(capacity = 11) {
+        this.capacity = capacity;
+        this.buckets = new Array(capacity).fill(null);
+        this.size = 0;
+      }
+
+      hash(key) {
+        let total = 0;
+        const strKey = String(key);
+        for (let i = 0; i < strKey.length; i++) {
+          total = (total * 31 + strKey.charCodeAt(i)) % this.capacity;
+        }
+        return total;
+      }
+
+      set(key, value) {
+        const index = this.hash(key);
+        let current = this.buckets[index];
+
+        // Check if key already exists in the chain
+        while (current) {
+          if (current.key === key) {
+            current.value = value;
+            return;
+          }
+          current = current.next;
+        }
+
+        // Prepend to chain
+        const newNode = new HashNode(key, value, this.buckets[index]);
+        this.buckets[index] = newNode;
+        this.size++;
+      }
+
+      get(key) {
+        const index = this.hash(key);
+        let current = this.buckets[index];
+        while (current) {
+          if (current.key === key) {
+            return current.value;
+          }
+          current = current.next;
+        }
+        return null;
+      }
+
+      remove(key) {
+        const index = this.hash(key);
+        let current = this.buckets[index];
+        let prev = null;
+
+        while (current) {
+          if (current.key === key) {
+            if (prev === null) {
+              this.buckets[index] = current.next;
+            } else {
+              prev.next = current.next;
+            }
+            this.size--;
+            return current.value;
+          }
+          prev = current;
+          current = current.next;
+        }
+        return null;
+      }
+
+      getAll() {
+        const results = [];
+        for (let i = 0; i < this.capacity; i++) {
+          let current = this.buckets[i];
+          while (current) {
+            results.push(current.value);
+            current = current.next;
+          }
+        }
+        return results;
+      }
+
+      getBucketState() {
+        const state = [];
+        for (let i = 0; i < this.capacity; i++) {
+          const chain = [];
+          let current = this.buckets[i];
+          while (current) {
+            chain.push({ key: current.key, title: current.value.title });
+            current = current.next;
+          }
+          state.push({ bucketIndex: i, count: chain.length, chain });
+        }
+        return state;
+      }
+    }
+
+
+    // =========================================================
+    // 2. TRIE (PREFIX TREE) FOR AUTOCOMPLETE
+    // =========================================================
+    class TrieNode {
+      constructor() {
+        this.children = {};
+        this.isEndOfWord = false;
+        this.metadata = [];
+      }
+    }
+
+    class Trie {
+      constructor() {
+        this.root = new TrieNode();
+      }
+
+      insert(word, data) {
+        if (!word) return;
+        let current = this.root;
+        const normalized = word.toLowerCase().trim();
+
+        for (let i = 0; i < normalized.length; i++) {
+          const char = normalized[i];
+          if (!current.children[char]) {
+            current.children[char] = new TrieNode();
+          }
+          current = current.children[char];
+        }
+        current.isEndOfWord = true;
+        current.metadata.push(data);
+      }
+
+      searchPrefix(prefix, limit = 5) {
+        if (!prefix) return [];
+        let current = this.root;
+        const normalized = prefix.toLowerCase().trim();
+
+        for (let i = 0; i < normalized.length; i++) {
+          const char = normalized[i];
+          if (!current.children[char]) {
+            return [];
+          }
+          current = current.children[char];
+        }
+
+        // Collect matching descendants
+        const results = [];
+        const dfs = (node) => {
+          if (results.length >= limit) return;
+          if (node.isEndOfWord) {
+            results.push(...node.metadata);
+          }
+          for (const key in node.children) {
+            dfs(node.children[key]);
+          }
+        };
+        dfs(current);
+        return results.slice(0, limit);
+      }
+    }
+
+
+    // =========================================================
+    // 3. DOUBLY LINKED LIST (FOR CHRONOLOGICAL & VIEW HISTORY)
+    // =========================================================
+    class DLLNode {
+      constructor(data, prev = null, next = null) {
+        this.data = data;
+        this.prev = prev;
+        this.next = next;
+      }
+    }
+
+    class DoublyLinkedList {
+      constructor() {
+        this.head = null;
+        this.tail = null;
+        this.current = null;
+        this.length = 0;
+      }
+
+      append(data) {
+        const newNode = new DLLNode(data);
+        if (!this.head) {
+          this.head = newNode;
+          this.tail = newNode;
+          this.current = newNode;
+        } else {
+          this.tail.next = newNode;
+          newNode.prev = this.tail;
+          this.tail = newNode;
+          this.current = newNode;
+        }
+        this.length++;
+      }
+
+      moveNext() {
+        if (this.current && this.current.next) {
+          this.current = this.current.next;
+          return this.current.data;
+        }
+        return this.current ? this.current.data : null;
+      }
+
+      movePrev() {
+        if (this.current && this.current.prev) {
+          this.current = this.current.prev;
+          return this.current.data;
+        }
+        return this.current ? this.current.data : null;
+      }
+
+      toArray() {
+        const items = [];
+        let curr = this.head;
+        while (curr) {
+          items.push({
+            data: curr.data,
+            isCurrent: curr === this.current
+          });
+          curr = curr.next;
+        }
+        return items;
+      }
+    }
+
+
+    // =========================================================
+    // 4. QUEUE (FIFO) FOR OUT-OF-STOCK WAITLISTS
+    // =========================================================
+    class QNode {
+      constructor(data, next = null) {
+        this.data = data;
+        this.next = next;
+      }
+    }
+
+    class Queue {
+      constructor() {
+        this.front = null;
+        this.rear = null;
+        this.size = 0;
+      }
+
+      enqueue(data) {
+        const node = new QNode(data);
+        if (!this.rear) {
+          this.front = node;
+          this.rear = node;
+        } else {
+          this.rear.next = node;
+          this.rear = node;
+        }
+        this.size++;
+      }
+
+      dequeue() {
+        if (this.isEmpty()) return null;
+        const removed = this.front.data;
+        this.front = this.front.next;
+        if (!this.front) this.rear = null;
+        this.size--;
+        return removed;
+      }
+
+      peek() {
+        return this.front ? this.front.data : null;
+      }
+
+      isEmpty() {
+        return this.size === 0;
+      }
+
+      toArray() {
+        const list = [];
+        let curr = this.front;
+        while (curr) {
+          list.push(curr.data);
+          curr = curr.next;
+        }
+        return list;
+      }
+    }
+
+
+    // =========================================================
+    // 5. STACK (LIFO) FOR UNDO FUNCTIONALITY
+    // =========================================================
+    class Stack {
+      constructor() {
+        this.items = [];
+      }
+
+      push(action) {
+        this.items.push(action);
+      }
+
+      pop() {
+        if (this.isEmpty()) return null;
+        return this.items.pop();
+      }
+
+      peek() {
+        return this.isEmpty() ? null : this.items[this.items.length - 1];
+      }
+
+      isEmpty() {
+        return this.items.length === 0;
+      }
+
+      size() {
+        return this.items.length;
+      }
+
+      toArray() {
+        return [...this.items].reverse();
+      }
+    }
+
+
+    // =========================================================
+    // 6. SCRATCH SORTING ALGORITHMS (MERGE & QUICK SORT)
+    // =========================================================
+    function mergeSort(arr, comparator) {
+      if (arr.length <= 1) return arr;
+      const mid = Math.floor(arr.length / 2);
+      const left = mergeSort(arr.slice(0, mid), comparator);
+      const right = mergeSort(arr.slice(mid), comparator);
+      return merge(left, right, comparator);
+    }
+
+    function merge(left, right, comparator) {
+      const result = [];
+      let i = 0, j = 0;
+      while (i < left.length && j < right.length) {
+        if (comparator(left[i], right[j]) <= 0) {
+          result.push(left[i]);
+          i++;
+        } else {
+          result.push(right[j]);
+          j++;
+        }
+      }
+      while (i < left.length) result.push(left[i++]);
+      while (j < right.length) result.push(right[j++]);
+      return result;
+    }
+
+    function quickSort(arr, comparator) {
+      if (arr.length <= 1) return arr;
+      const pivot = arr[arr.length - 1];
+      const left = [];
+      const right = [];
+      for (let i = 0; i < arr.length - 1; i++) {
+        if (comparator(arr[i], pivot) <= 0) {
+          left.push(arr[i]);
+        } else {
+          right.push(arr[i]);
+        }
+      }
+      return [...quickSort(left, comparator), pivot, ...quickSort(right, comparator)];
+    }
+
+
+    // =========================================================
+    // APPLICATION STATE (INSTANTIATED DATA STRUCTURES)
+    // =========================================================
+    const bookHashTable = new HashTable(11);
+    const searchTrie = new Trie();
+    const viewedBooksDll = new DoublyLinkedList();
+    const actionUndoStack = new Stack();
+    const waitlistQueues = {}; // Map of ISBN -> Queue()
+    const transactionHistoryDll = new DoublyLinkedList();
+
+    // 14 Pre-Loaded Computer Science Classics
+    const MOCK_BOOKS = [
+      { isbn: "978-0262033848", title: "Introduction to Algorithms", author: "Thomas H. Cormen", year: 2009, category: "Algorithms", totalCopies: 4, availableCopies: 2 },
+      { isbn: "978-0132350884", title: "Clean Code", author: "Robert C. Martin", year: 2008, category: "Software Architecture", totalCopies: 5, availableCopies: 4 },
+      { isbn: "978-0201633610", title: "Design Patterns (GoF)", author: "Erich Gamma et al.", year: 1994, category: "Software Architecture", totalCopies: 3, availableCopies: 1 },
+      { isbn: "978-1119800361", title: "Operating System Concepts", author: "Abraham Silberschatz", year: 2018, category: "Computer Science", totalCopies: 3, availableCopies: 0 },
+      { isbn: "978-0134610993", title: "Artificial Intelligence: A Modern Approach", author: "Stuart Russell, Peter Norvig", year: 2020, category: "Artificial Intelligence", totalCopies: 4, availableCopies: 3 },
+      { isbn: "978-0262510875", title: "Structure and Interpretation of Computer Programs", author: "Harold Abelson, Gerald Sussman", year: 1996, category: "Computer Science", totalCopies: 3, availableCopies: 2 },
+      { isbn: "978-1449373320", title: "Designing Data-Intensive Applications", author: "Martin Kleppmann", year: 2017, category: "Computer Science", totalCopies: 5, availableCopies: 1 },
+      { isbn: "978-0134092669", title: "Computer Systems: A Programmer's Perspective", author: "Randal Bryant, David O'Hallaron", year: 2015, category: "Computer Science", totalCopies: 3, availableCopies: 0 },
+      { isbn: "978-0135957059", title: "The Pragmatic Programmer", author: "David Thomas, Andrew Hunt", year: 2019, category: "Software Architecture", totalCopies: 4, availableCopies: 4 },
+      { isbn: "978-0201896831", title: "The Art of Computer Programming", author: "Donald E. Knuth", year: 1997, category: "Algorithms", totalCopies: 2, availableCopies: 1 },
+      { isbn: "978-0321486813", title: "Compilers: Principles, Techniques, and Tools", author: "Alfred Aho et al.", year: 2006, category: "Computer Science", totalCopies: 3, availableCopies: 2 },
+      { isbn: "978-0262035613", title: "Deep Learning", author: "Ian Goodfellow et al.", year: 2016, category: "Artificial Intelligence", totalCopies: 3, availableCopies: 2 },
+      { isbn: "978-0078022159", title: "Database System Concepts", author: "Abraham Silberschatz, Henry Korth", year: 2019, category: "Computer Science", totalCopies: 3, availableCopies: 1 },
+      { isbn: "978-0735619678", title: "Code Complete", author: "Steve McConnell", year: 2004, category: "Software Architecture", totalCopies: 4, availableCopies: 3 },
+    ];
+
+    // Seed mock data into data structures
+    function seedInitialData() {
+      MOCK_BOOKS.forEach(b => {
+        bookHashTable.set(b.isbn, { ...b });
+        searchTrie.insert(b.title, b);
+        searchTrie.insert(b.author, b);
+        waitlistQueues[b.isbn] = new Queue();
+      });
+
+      // Populate sample waitlist for out-of-stock Operating System Concepts
+      const osIsbn = "978-1119800361";
+      waitlistQueues[osIsbn].enqueue({ memberId: "MEM102", name: "Ada Lovelace", timestamp: "10:30 AM" });
+      waitlistQueues[osIsbn].enqueue({ memberId: "MEM103", name: "Grace Hopper", timestamp: "11:15 AM" });
+
+      // Populate sample waitlist for Computer Systems
+      const csappIsbn = "978-0134092669";
+      waitlistQueues[csappIsbn].enqueue({ memberId: "MEM104", name: "Linus Torvalds", timestamp: "09:00 AM" });
+
+      // Populate initial browsing history DLL
+      viewedBooksDll.append(bookHashTable.get("978-0262033848"));
+      viewedBooksDll.append(bookHashTable.get("978-0132350884"));
+      viewedBooksDll.append(bookHashTable.get("978-1449373320"));
+
+      // Seed initial transactions
+      transactionHistoryDll.append({ id: "TXN-01", type: "ISSUE", isbn: "978-1119800361", title: "Operating System Concepts", memberId: "MEM101", time: "Yesterday" });
+      transactionHistoryDll.append({ id: "TXN-02", type: "ISSUE", isbn: "978-0134092669", title: "Computer Systems (CSAPP)", memberId: "MEM105", time: "Today, 08:30" });
+    }
+
+    // =========================================================
+    // UI TOAST NOTIFICATION UTILITY
+    // =========================================================
+    function showToast(title, message, type = "info") {
+      const container = document.getElementById("toast-center");
+      const toast = document.createElement("div");
+      const borders = {
+        info: "border-indigo-400 bg-white/90 text-indigo-950",
+        success: "border-emerald-400 bg-white/90 text-emerald-950",
+        warning: "border-amber-400 bg-white/90 text-amber-950",
+        error: "border-rose-400 bg-white/90 text-rose-950"
+      };
+
+      toast.className = `p-4 rounded-2xl glass-card border shadow-xl flex items-start space-x-3 transition-all duration-300 transform translate-y-2 pointer-events-auto ${borders[type] || borders.info}`;
+      toast.innerHTML = `
+        <div class="mt-0.5"><i data-lucide="${type === 'success' ? 'check-circle-2' : type === 'warning' ? 'alert-triangle' : 'info'}" class="w-4 h-4"></i></div>
+        <div class="text-xs space-y-0.5">
+          <div class="font-extrabold">${title}</div>
+          <div class="text-slate-500 font-medium">${message}</div>
+        </div>
+      `;
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons();
+
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "translate-y-4");
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+
+    // =========================================================
+    // VIEW NAVIGATION
+    // =========================================================
+    const views = ['dashboard', 'catalog', 'desk', 'waitlist', 'history', 'visualizer'];
+    function navigateTo(targetView) {
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const navBtn = document.getElementById(`nav-${v}`);
+        if (v === targetView) {
+          el.classList.remove('hidden');
+          navBtn.className = "w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all bg-indigo-50 text-indigo-600 border border-indigo-100/60 shadow-sm";
+        } else {
+          el.classList.add('hidden');
+          navBtn.className = "w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-white/60";
+        }
+      });
+
+      if (targetView === 'catalog') renderFullCatalog();
+      if (targetView === 'desk') populateDeskDropdowns();
+      if (targetView === 'waitlist') renderWaitlistQueues();
+      if (targetView === 'history') renderHistoryLog();
+      if (targetView === 'visualizer') renderDsaVisualizer();
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+
+    // =========================================================
+    // LIVE AUTOCOMPLETE (TRIE $O(L)$)
+    // =========================================================
+    function handleSearchInput(value) {
+      const dropdown = document.getElementById("trie-autocomplete-dropdown");
+      const val = value.trim();
+      if (!val) {
+        dropdown.classList.add("hidden");
+        return;
+      }
+
+      const matches = searchTrie.searchPrefix(val, 6);
+      if (matches.length === 0) {
+        dropdown.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center font-medium">No matching titles or authors in Trie.</div>`;
+        dropdown.classList.remove("hidden");
+        return;
+      }
+
+      dropdown.innerHTML = `
+        <div class="px-3 py-1.5 text-[10px] font-mono font-bold text-slate-400 border-b border-slate-100 flex justify-between items-center bg-slate-50/70 rounded-lg mb-1">
+          <span class="flex items-center gap-1.5"><i data-lucide="binary" class="w-3 h-3 text-indigo-500"></i> TRIE PREFIX LOOKUP</span>
+          <span class="text-indigo-600 font-semibold bg-indigo-50 px-1.5 py-0.5 rounded">O(L) Complexity</span>
+        </div>
+        ${matches.map(m => `
+          <div onclick="selectTrieResult('${m.isbn}')" class="p-2.5 hover:bg-indigo-50/90 rounded-xl cursor-pointer transition-all flex items-center justify-between text-xs group border border-transparent hover:border-indigo-100">
+            <div>
+              <div class="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">${m.title}</div>
+              <div class="text-[11px] text-slate-500">${m.author} (${m.year})</div>
+            </div>
+            <span class="text-[10px] font-mono font-bold px-2.5 py-1 rounded-lg shrink-0 ${m.availableCopies > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-amber-50 text-amber-700 border border-amber-200/60'}">
+              ${m.availableCopies > 0 ? `${m.availableCopies} In Stock` : 'Waitlisted'}
+            </span>
+          </div>
+        `).join("")}
+      `;
+      dropdown.classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectTrieResult(isbn) {
+      const book = bookHashTable.get(isbn);
+      if (!book) return;
+      document.getElementById("global-search-input").value = book.title;
+      document.getElementById("trie-autocomplete-dropdown").classList.add("hidden");
+      
+      // Append to DLL viewed history
+      viewedBooksDll.append(book);
+      renderDllChain();
+      navigateTo('catalog');
+      renderFullCatalog([book]);
+      showToast("Book Selected", `Found "${book.title}" in Hash Table in O(1) time.`, "info");
+    }
+
+    // Close autocomplete on click outside
+    document.addEventListener("click", (e) => {
+      const dropdown = document.getElementById("trie-autocomplete-dropdown");
+      const input = document.getElementById("global-search-input");
+      if (dropdown && !dropdown.contains(e.target) && e.target !== input) {
+        dropdown.classList.add("hidden");
+      }
+    });
+
+
+    // =========================================================
+    // RECENTLY VIEWED NAVIGATOR (DOUBLY LINKED LIST)
+    // =========================================================
+    function navigateDll(direction) {
+      const item = direction === 'next' ? viewedBooksDll.moveNext() : viewedBooksDll.movePrev();
+      if (item) {
+        renderDllChain();
+        showToast("History Traversal", `Navigated ${direction} to: "${item.title}"`, "info");
+      } else {
+        showToast("End of History", `No more items in ${direction} direction.`, "warning");
+      }
+    }
+
+    function renderDllChain() {
+      const container = document.getElementById("dll-horizontal-chain");
+      const items = viewedBooksDll.toArray();
+      if (items.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-400">No recently viewed books.</span>`;
+        return;
+      }
+
+      container.innerHTML = items.map((node, idx) => `
+        <div class="flex items-center shrink-0">
+          <div class="px-3.5 py-2 rounded-xl text-xs font-mono transition-all ${node.isCurrent ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/25 ring-2 ring-indigo-400/50' : 'dsa-node-pill text-slate-700'}">
+            <div class="text-[9px] uppercase tracking-wider ${node.isCurrent ? 'text-indigo-200' : 'text-slate-400'}">${node.isCurrent ? 'CURRENT' : `NODE #${idx+1}`}</div>
+            <div class="font-sans font-bold text-xs truncate max-w-[130px]">${node.data.title}</div>
+          </div>
+          ${idx < items.length - 1 ? `<div class="mx-2 text-indigo-400 font-bold">&harr;</div>` : ''}
+        </div>
+      `).join("");
+    }
+
+
+    // =========================================================
+    // CATALOG RENDERING & CUSTOM SORTING
+    // =========================================================
+    function renderFullCatalog(customList = null) {
+      const container = document.getElementById("full-catalog-grid");
+      const books = customList || bookHashTable.getAll();
+
+      container.innerHTML = books.map(b => {
+        const isAvail = b.availableCopies > 0;
+        return `
+          <div class="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 border border-slate-200">
+                  ${b.isbn}
+                </span>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-lg ${isAvail ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
+                  ${isAvail ? `${b.availableCopies} Available` : 'Waitlist Active'}
+                </span>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900 mt-3 line-clamp-1">${b.title}</h4>
+              <p class="text-xs text-slate-500">${b.author} • ${b.year}</p>
+              <div class="mt-2 inline-block text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                ${b.category}
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-200/60 flex items-center justify-between">
+              <span class="text-xs text-slate-400 font-mono">Copies: ${b.availableCopies}/${b.totalCopies}</span>
+              <button onclick="quickActionCheckout('${b.isbn}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition ${isAvail ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm' : 'bg-amber-500 hover:bg-amber-600 text-white'}">
+                ${isAvail ? 'Issue' : 'Join Queue'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // Also render preview spotlight on dashboard
+      const dashPreview = document.getElementById("dashboard-catalog-grid");
+      if (dashPreview) {
+        dashPreview.innerHTML = books.slice(0, 3).map(b => `
+          <div class="p-4 rounded-2xl bg-white/60 border border-slate-200/70 space-y-2">
+            <span class="text-[10px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">${b.isbn}</span>
+            <h5 class="text-xs font-bold text-slate-900 truncate">${b.title}</h5>
+            <p class="text-[11px] text-slate-500 truncate">${b.author}</p>
+          </div>
+        `).join("");
+      }
+
+      updateMetrics();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function triggerCatalogSort() {
+      const field = document.getElementById("catalog-sort-field").value;
+      const algo = document.getElementById("catalog-sort-algo").value;
+      const allBooks = bookHashTable.getAll();
+
+      const comparator = (a, b) => {
+        if (field === 'year' || field === 'availableCopies') {
+          return a[field] - b[field];
+        }
+        return String(a[field]).localeCompare(String(b[field]));
+      };
+
+      const startTime = performance.now();
+      const sorted = algo === 'merge' ? mergeSort(allBooks, comparator) : quickSort(allBooks, comparator);
+      const duration = (performance.now() - startTime).toFixed(3);
+
+      renderFullCatalog(sorted);
+
+      const metricsBox = document.getElementById("sort-metrics-box");
+      const content = document.getElementById("sort-metrics-content");
+      content.innerHTML = `Sorted ${sorted.length} books by <strong>${field}</strong> using <strong>${algo === 'merge' ? 'Merge Sort' : 'Quick Sort'}</strong> in <strong>${duration} ms</strong>.`;
+      metricsBox.classList.remove("hidden");
+      showToast("Catalog Sorted", `${algo.toUpperCase()} Sort completed in ${duration} ms.`, "success");
+    }
+
+
+    // =========================================================
+    // ISSUE & RETURN LOGIC (WITH AUTOMATIC FIFO QUEUE ALLOCATION)
+    // =========================================================
+    function populateDeskDropdowns() {
+      const issueSelect = document.getElementById("desk-issue-book-select");
+      const returnSelect = document.getElementById("desk-return-book-select");
+      const books = bookHashTable.getAll();
+
+      issueSelect.innerHTML = books.map(b => `
+        <option value="${b.isbn}">${b.title} (${b.availableCopies} available) - [${b.isbn}]</option>
+      `).join("");
+
+      returnSelect.innerHTML = books.map(b => `
+        <option value="${b.isbn}">${b.title} - [${b.isbn}]</option>
+      `).join("");
+    }
+
+    function handleIssueSubmit() {
+      const isbn = document.getElementById("desk-issue-book-select").value;
+      const memberId = document.getElementById("desk-issue-member-select").value;
+      quickActionCheckout(isbn, memberId);
+    }
+
+    function quickActionCheckout(isbn, memberId = "MEM101") {
+      const book = bookHashTable.get(isbn);
+      if (!book) return;
+
+      if (book.availableCopies <= 0) {
+        // Enqueue into FIFO Waitlist Queue
+        if (!waitlistQueues[isbn]) waitlistQueues[isbn] = new Queue();
+        waitlistQueues[isbn].enqueue({
+          memberId,
+          name: memberId === 'MEM101' ? 'Alan Turing' : memberId,
+          timestamp: new Date().toLocaleTimeString()
+        });
+
+        // Push Undo Action to Stack
+        actionUndoStack.push({
+          type: "ENQUEUE_WAITLIST",
+          isbn,
+          memberId,
+          description: `Waitlisted ${memberId} for "${book.title}"`
+        });
+
+        showToast("Joined Waitlist (FIFO Queue)", `"${book.title}" is out of stock. Added ${memberId} to FIFO Queue.`, "warning");
+        updateMetrics();
+        return;
+      }
+
+      // Decrement Available Copy
+      book.availableCopies--;
+      bookHashTable.set(isbn, book);
+
+      // Add to Transaction Log
+      transactionHistoryDll.append({
+        id: `TXN-${Math.floor(Math.random() * 9000 + 1000)}`,
+        type: "ISSUE",
+        isbn: book.isbn,
+        title: book.title,
+        memberId,
+        time: "Just now"
+      });
+
+      // Push Undo Action to Stack
+      actionUndoStack.push({
+        type: "ISSUE_BOOK",
+        isbn,
+        memberId,
+        description: `Issued "${book.title}" to ${memberId}`
+      });
+
+      showToast("Checkout Confirmed", `Successfully issued "${book.title}" to ${memberId}.`, "success");
+      renderFullCatalog();
+      updateMetrics();
+    }
+
+    function handleReturnSubmit() {
+      const isbn = document.getElementById("desk-return-book-select").value;
+      const memberId = document.getElementById("desk-return-member").value;
+      const book = bookHashTable.get(isbn);
+      if (!book) return;
+
+      // Check if there is an active Waitlist Queue for this book
+      const queue = waitlistQueues[isbn];
+      if (queue && !queue.isEmpty()) {
+        // Automatic FIFO Allocation to Next Member!
+        const nextMember = queue.dequeue();
+        
+        transactionHistoryDll.append({
+          id: `TXN-${Math.floor(Math.random() * 9000 + 1000)}`,
+          type: "AUTO_ALLOCATE",
+          isbn: book.isbn,
+          title: book.title,
+          memberId: nextMember.memberId,
+          time: "Just now (FIFO Transfer)"
+        });
+
+        actionUndoStack.push({
+          type: "AUTO_TRANSFER",
+          isbn,
+          fromMember: memberId,
+          toMember: nextMember.memberId,
+          description: `Returned by ${memberId} & auto-allocated to ${nextMember.memberId} via Queue`
+        });
+
+        showToast("Auto-Allocated to Queue!", `Returned book immediately assigned to next waitlist user: ${nextMember.memberId}`, "info");
+      } else {
+        // Normal return to available copies
+        book.availableCopies = Math.min(book.totalCopies, book.availableCopies + 1);
+        bookHashTable.set(isbn, book);
+
+        transactionHistoryDll.append({
+          id: `TXN-${Math.floor(Math.random() * 9000 + 1000)}`,
+          type: "RETURN",
+          isbn: book.isbn,
+          title: book.title,
+          memberId,
+          time: "Just now"
+        });
+
+        actionUndoStack.push({
+          type: "RETURN_BOOK",
+          isbn,
+          memberId,
+          description: `Returned "${book.title}" by ${memberId}`
+        });
+
+        showToast("Return Processed", `"${book.title}" returned to available inventory.`, "success");
+      }
+
+      renderFullCatalog();
+      updateMetrics();
+    }
+
+
+    // =========================================================
+    // UNDO LAST ACTION (STACK LIFO IMPLEMENTATION)
+    // =========================================================
+    function executeUndoAction() {
+      if (actionUndoStack.isEmpty()) {
+        showToast("Undo Stack Empty", "No recent actions to undo.", "warning");
+        return;
+      }
+
+      const action = actionUndoStack.pop();
+      const book = bookHashTable.get(action.isbn);
+
+      if (action.type === "ISSUE_BOOK") {
+        if (book) {
+          book.availableCopies++;
+          bookHashTable.set(action.isbn, book);
+        }
+        showToast("Undid Checkout", `Restored copy of "${book ? book.title : action.isbn}".`, "info");
+      } else if (action.type === "RETURN_BOOK") {
+        if (book) {
+          book.availableCopies = Math.max(0, book.availableCopies - 1);
+          bookHashTable.set(action.isbn, book);
+        }
+        showToast("Undid Return", `Deducted copy of "${book ? book.title : action.isbn}".`, "info");
+      } else if (action.type === "ENQUEUE_WAITLIST") {
+        const queue = waitlistQueues[action.isbn];
+        if (queue) {
+          // Rebuild queue without this user
+          const items = queue.toArray().filter(i => i.memberId !== action.memberId);
+          waitlistQueues[action.isbn] = new Queue();
+          items.forEach(it => waitlistQueues[action.isbn].enqueue(it));
+        }
+        showToast("Undid Waitlist", `Removed ${action.memberId} from waitlist queue.`, "info");
+      } else if (action.type === "ADD_BOOK") {
+        bookHashTable.remove(action.isbn);
+        showToast("Undid Book Addition", `Removed book [${action.isbn}] from catalog.`, "info");
+      }
+
+      renderFullCatalog();
+      updateMetrics();
+      if (!document.getElementById("view-visualizer").classList.contains("hidden")) {
+        renderDsaVisualizer();
+      }
+    }
+
+
+    // =========================================================
+    // WAITLIST & HISTORY RENDERING
+    // =========================================================
+    function renderWaitlistQueues() {
+      const container = document.getElementById("waitlist-queues-container");
+      const books = bookHashTable.getAll();
+      const activeQueues = books.filter(b => waitlistQueues[b.isbn] && !waitlistQueues[b.isbn].isEmpty());
+
+      if (activeQueues.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">All books currently have zero active waitlists.</div>`;
+        return;
+      }
+
+      container.innerHTML = activeQueues.map(b => {
+        const items = waitlistQueues[b.isbn].toArray();
+        return `
+          <div class="p-4 rounded-2xl bg-white/60 border border-slate-200/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-bold text-sm text-slate-900">${b.title}</h4>
+                <p class="text-xs text-slate-400 font-mono">ISBN: ${b.isbn}</p>
+              </div>
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700">
+                ${items.length} waiting
+              </span>
+            </div>
+            <!-- FIFO Queue Line -->
+            <div class="flex items-center space-x-2 overflow-x-auto py-1">
+              <span class="text-[10px] font-mono font-bold text-amber-600">HEAD &rarr;</span>
+              ${items.map((it, idx) => `
+                <div class="px-3 py-1.5 rounded-xl bg-white border border-amber-200/80 shadow-sm text-xs font-mono flex items-center space-x-2">
+                  <span class="font-bold text-slate-900">${it.memberId}</span>
+                  <span class="text-[10px] text-slate-400">(${it.timestamp})</span>
+                </div>
+                ${idx < items.length - 1 ? '<span class="text-slate-400 text-xs">&rarr;</span>' : ''}
+              `).join("")}
+              <span class="text-[10px] font-mono font-bold text-slate-400">&rarr; REAR</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderHistoryLog() {
+      const container = document.getElementById("history-transactions-list");
+      const items = transactionHistoryDll.toArray();
+      if (items.length === 0) {
+        container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No transactions recorded yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = items.reverse().map(item => `
+        <div class="p-3.5 rounded-xl bg-white/70 border border-slate-200/80 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-3">
+            <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded-md ${item.data.type === 'ISSUE' ? 'bg-indigo-50 text-indigo-700' : item.data.type === 'RETURN' ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'}">
+              ${item.data.type}
+            </span>
+            <div>
+              <span class="font-bold text-slate-900">${item.data.title}</span>
+              <span class="text-slate-400 text-[11px] ml-1 font-mono">(${item.data.isbn})</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4 text-slate-500 font-mono text-[11px]">
+            <span>Member: <strong class="text-slate-800">${item.data.memberId}</strong></span>
+            <span>${item.data.time}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+
+    // =========================================================
+    // INTERACTIVE DSA VISUALIZER INSPECTOR
+    // =========================================================
+    function renderDsaVisualizer() {
+      // 1. Hash Table Buckets
+      const htContainer = document.getElementById("vis-hash-table-buckets");
+      const bucketState = bookHashTable.getBucketState();
+      
+      htContainer.innerHTML = bucketState.map(b => `
+        <div class="p-3 rounded-xl bg-white/70 border ${b.count > 0 ? 'border-indigo-200 bg-indigo-50/20' : 'border-slate-200'} space-y-1.5 text-xs">
+          <div class="flex items-center justify-between font-mono">
+            <span class="font-bold text-slate-700">Bucket #${b.bucketIndex}</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded font-bold ${b.count > 1 ? 'bg-rose-100 text-rose-700' : b.count === 1 ? 'bg-indigo-100 text-indigo-700' : 'text-slate-400'}">
+              ${b.count} ${b.count > 1 ? 'Collision!' : 'nodes'}
+            </span>
+          </div>
+          <div class="space-y-1 font-mono text-[11px]">
+            ${b.chain.length > 0 ? b.chain.map(node => `
+              <div class="p-1.5 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center justify-between">
+                <span class="truncate max-w-[140px] font-sans font-medium text-slate-800">${node.title}</span>
+                <span class="text-[9px] text-indigo-600 font-mono">${node.key.slice(-6)}</span>
+              </div>
+            `).join("") : '<div class="text-[11px] text-slate-400 italic">Empty bucket (null)</div>'}
+          </div>
+        </div>
+      `).join("");
+
+      document.getElementById("vis-ht-metrics").innerText = `Total: ${bookHashTable.size} | Capacity: 11 | Load Factor: ${(bookHashTable.size / 11).toFixed(2)}`;
+
+      // 2. Undo Stack LIFO
+      const stackContainer = document.getElementById("vis-stack-container");
+      const stackItems = actionUndoStack.toArray();
+      document.getElementById("vis-stack-count").innerText = `${stackItems.length} Elements`;
+
+      if (stackItems.length === 0) {
+        stackContainer.innerHTML = `<div class="text-xs text-slate-400 text-center py-8">Stack is empty. Perform loans or returns to push snapshots.</div>`;
+      } else {
+        stackContainer.innerHTML = stackItems.map((act, idx) => `
+          <div class="p-2.5 rounded-xl bg-white border border-rose-200 shadow-sm text-xs font-mono flex items-center justify-between">
+            <div>
+              <span class="font-bold text-rose-600">[TOP - ${idx}]</span>
+              <span class="text-slate-800 ml-1 font-medium font-sans">${act.description}</span>
+            </div>
+            <span class="text-[10px] text-slate-400">${act.type}</span>
+          </div>
+        `).join("");
+      }
+
+      // 3. FIFO Waitlists
+      const queueContainer = document.getElementById("vis-queue-container");
+      const activeWaitlists = Object.keys(waitlistQueues).filter(isbn => !waitlistQueues[isbn].isEmpty());
+
+      if (activeWaitlists.length === 0) {
+        queueContainer.innerHTML = `<div class="text-xs text-slate-400 text-center py-8">No active waitlist queues in memory.</div>`;
+      } else {
+        queueContainer.innerHTML = activeWaitlists.map(isbn => {
+          const book = bookHashTable.get(isbn);
+          const queueItems = waitlistQueues[isbn].toArray();
+          return `
+            <div class="p-3 bg-white rounded-xl border border-amber-200 space-y-2 text-xs">
+              <div class="font-bold text-slate-900">${book ? book.title : isbn}</div>
+              <div class="flex items-center space-x-1.5 overflow-x-auto font-mono text-[11px]">
+                <span class="text-amber-600 font-bold">FRONT &rarr;</span>
+                ${queueItems.map(it => `
+                  <span class="px-2 py-0.5 bg-amber-50 rounded border border-amber-200 text-amber-900 font-semibold">${it.memberId}</span>
+                `).join("<span class='text-slate-300'>&rarr;</span>")}
+                <span class="text-slate-400">&rarr; REAR</span>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+
+    // =========================================================
+    // METRICS UPDATE & MODAL CONTROLLERS
+    // =========================================================
+    function updateMetrics() {
+      const allBooks = bookHashTable.getAll();
+      const totalAvailable = allBooks.reduce((sum, b) => sum + b.availableCopies, 0);
+      let totalWaitlist = 0;
+      Object.keys(waitlistQueues).forEach(isbn => {
+        totalWaitlist += waitlistQueues[isbn].size;
+      });
+
+      document.getElementById("metric-total-books").innerText = allBooks.length;
+      document.getElementById("metric-available-books").innerText = totalAvailable;
+      document.getElementById("metric-waitlist-count").innerText = totalWaitlist;
+      document.getElementById("metric-stack-depth").innerText = actionUndoStack.size();
+
+      document.getElementById("sidebar-stack-count").innerText = actionUndoStack.size();
+      document.getElementById("sidebar-hash-count").innerText = allBooks.length;
+    }
+
+    function openAddBookModal() {
+      document.getElementById("modal-add-book").classList.remove("hidden");
+    }
+    function closeAddBookModal() {
+      document.getElementById("modal-add-book").classList.add("hidden");
+    }
+
+    function handleAddBookSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById("add-book-title").value.trim();
+      const author = document.getElementById("add-book-author").value.trim();
+      const isbn = document.getElementById("add-book-isbn").value.trim();
+      const year = parseInt(document.getElementById("add-book-year").value);
+      const category = document.getElementById("add-book-category").value;
+      const copies = parseInt(document.getElementById("add-book-copies").value);
+
+      const newBook = {
+        isbn,
+        title,
+        author,
+        year,
+        category,
+        totalCopies: copies,
+        availableCopies: copies
+      };
+
+      // Insert into Custom Hash Table
+      bookHashTable.set(isbn, newBook);
+
+      // Insert into Trie
+      searchTrie.insert(title, newBook);
+      searchTrie.insert(author, newBook);
+
+      // Init Waitlist Queue
+      waitlistQueues[isbn] = new Queue();
+
+      // Push to Undo Stack
+      actionUndoStack.push({
+        type: "ADD_BOOK",
+        isbn,
+        description: `Added "${title}" to catalog`
+      });
+
+      closeAddBookModal();
+      renderFullCatalog();
+      showToast("Book Created", `Added "${title}" with ISBN ${isbn} to Hash Table.`, "success");
+    }
+
+    // Initialize application on load
+    window.addEventListener("DOMContentLoaded", () => {
+      seedInitialData();
+      renderFullCatalog();
+      renderDllChain();
+      updateMetrics();
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
+
