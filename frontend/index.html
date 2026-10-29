@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DSA-Powered Library Management System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+          <i data-lucide="book-open-check" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-indigo-100 to-indigo-400 bg-clip-text text-transparent">
+            AlgoLib Architect
+          </span>
+          <span class="text-xs ml-2 px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono">
+            5-Unit DSA Core
+          </span>
+        </div>
+      </div>
+
+      <!-- Live Mode Tabs -->
+      <div class="flex items-center space-x-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+        <button id="tab-portal-btn" onclick="switchMainTab('portal')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-sm flex items-center space-x-2">
+          <i data-lucide="library" class="w-4 h-4"></i>
+          <span>Librarian & Student Portal</span>
+        </button>
+        <button id="tab-visualizer-btn" onclick="switchMainTab('visualizer')" class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white flex items-center space-x-2">
+          <i data-lucide="binary" class="w-4 h-4"></i>
+          <span>DSA Visualizer Inspector</span>
+        </button>
+      </div>
+
+      <!-- Quick Action: Undo Stack & Server Status -->
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 text-xs text-slate-400 font-mono bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+          <div class="pulse-indicator"></div>
+          <span>API: Online</span>
+        </div>
+        <button onclick="triggerUndo()" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
+          <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+          <span>Undo Stack ADT</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- MAIN WRAPPER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: LIBRARIAN & STUDENT PORTAL -->
+    <!-- ======================================================== -->
+    <div id="view-portal" class="space-y-6">
+
+      <!-- Featured Books Carousel (Circular Linked List Preview) -->
+      <div class="glass-panel p-5 rounded-2xl">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-2.5">
+            <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <i data-lucide="repeat" class="w-4 h-4"></i>
+            </span>
+            <div>
+              <h2 class="text-sm font-semibold text-slate-200">Featured Books Showcase</h2>
+              <p class="text-xs text-slate-400">Cycles infinitely via <span class="font-mono text-indigo-300">CircularLinkedList</span></p>
+            </div>
+          </div>
+          <button onclick="cycleFeaturedCarousel()" class="px-3 py-1.5 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center space-x-1.5 transition">
+            <span>Next Item</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div id="featured-carousel-display" class="flex items-center space-x-4 overflow-x-auto pb-2">
+          <!-- Rendered via JS -->
+          <div class="text-xs text-slate-500">Loading Featured Carousel...</div>
+        </div>
+      </div>
+
+      <!-- Search & Autocomplete via O(L) Trie -->
+      <div class="glass-panel p-6 rounded-2xl relative">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex-1 relative">
+            <label class="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center space-x-1.5">
+              <span>Live Search Autocomplete</span>
+              <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.2 rounded font-mono">Unit IV: O(L) Trie</span>
+            </label>
+            <div class="relative">
+              <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5"></i>
+              <input
+                id="search-input"
+                type="text"
+                placeholder="Type book title or author (e.g., Cormen, Clean, System)..."
+                oninput="onSearchInput(this.value)"
+                class="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition text-slate-200"
+              />
+            </div>
+            <!-- Trie Autocomplete Dropdown -->
+            <div id="trie-autocomplete-box" class="hidden absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-40 p-2 max-h-60 overflow-y-auto">
+              <!-- Autocomplete matches filled dynamically -->
+            </div>
+          </div>
+
+          <!-- Quick Actions & Add Book Modal Trigger -->
+          <div class="flex items-end space-x-3">
+            <button onclick="openAddBookModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 flex items-center space-x-2 transition">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>Add New Book</span>
+            </button>
+            <button onclick="openFineCalculatorModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-semibold border border-slate-700 flex items-center space-x-2 transition">
+              <i data-lucide="calculator" class="w-4 h-4 text-indigo-400"></i>
+              <span>Fine Evaluator</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-Column: Catalog & Real-Time Operational Buffers -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Column 1 & 2: Books Catalog with Sorting Controls -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="glass-panel p-5 rounded-2xl">
+            <!-- Catalog Header & Sort Options -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
+              <div>
+                <h3 class="text-base font-bold text-slate-100 flex items-center space-x-2">
+                  <span>Library Master Catalog</span>
+                  <span id="catalog-count-badge" class="px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-300 font-mono">0</span>
+                </h3>
+                <p class="text-xs text-slate-400">Powered by Custom Hash Table & Merge/Insertion Sorts</p>
+              </div>
+
+              <!-- Sorting Algorithms Dropdown -->
+              <div class="flex items-center space-x-2">
+                <select id="sort-field" class="bg-slate-900 text-xs text-slate-300 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                  <option value="title">Sort by Title</option>
+                  <option value="year">Sort by Year</option>
+                  <option value="borrow_count">Sort by Borrows</option>
+                  <option value="available_copies">Sort by Available</option>
+                </select>
+                <select id="sort-algo" class="bg-slate-900 text-xs text-slate-300 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none font-mono">
+                  <option value="merge_sort">Merge Sort O(N log N)</option>
+                  <option value="insertion_sort">Insertion Sort O(N²)</option>
+                  <option value="bubble_sort">Bubble Sort O(N²)</option>
+                  <option value="selection_sort">Selection Sort O(N²)</option>
+                </select>
+                <button onclick="applyCatalogSort()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded-lg font-semibold text-white transition flex items-center space-x-1">
+                  <i data-lucide="arrow-down-up" class="w-3.5 h-3.5"></i>
+                  <span>Sort</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Sort Metrics Banner -->
+            <div id="sort-metrics-banner" class="hidden my-3 p-2.5 rounded-lg bg-indigo-950/40 border border-indigo-500/20 text-xs flex items-center justify-between font-mono">
+              <span id="sort-metrics-text" class="text-indigo-300">Algorithm: Merge Sort | Comparisons: 0 | Swaps: 0</span>
+              <button onclick="closeSortBanner()" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+
+            <!-- Book Cards Grid -->
+            <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: Operational Buffers (Drop-Box Circular Queue, VIP Deque, Priority Queue) -->
+        <div class="space-y-6">
+
+          <!-- Circular Queue: Return Drop-Box -->
+          <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-2">
+                <span class="p-1.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <i data-lucide="inbox" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <h4 class="text-sm font-semibold text-slate-200">Return Drop-Box Buffer</h4>
+                  <p class="text-[11px] text-slate-400 font-mono">Unit I: CircularQueue (Cap: 6)</p>
+                </div>
+              </div>
+              <button onclick="processDropboxItem()" class="px-2.5 py-1 text-xs rounded bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 font-medium transition">
+                Check-in Next
+              </button>
+            </div>
+
+            <!-- Buffer Slots Display -->
+            <div id="dropbox-slots" class="grid grid-cols-6 gap-1.5 my-3">
+              <!-- Rendered via JS -->
+            </div>
+            <p id="dropbox-status-text" class="text-[11px] text-slate-400 font-mono">Front: 0 | Rear: 0 | Count: 0</p>
+          </div>
+
+          <!-- VIP & Faculty Deque -->
+          <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-2">
+                <span class="p-1.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <i data-lucide="crown" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <h4 class="text-sm font-semibold text-slate-200">VIP & Faculty Scheduling</h4>
+                  <p class="text-[11px] text-slate-400 font-mono">Unit I: DoubleEndedQueue (Front=VIP)</p>
+                </div>
+              </div>
+            </div>
+            <div id="vip-deque-list" class="space-y-2 text-xs">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Reservation Priority Queue -->
+          <div class="glass-panel p-5 rounded-2xl">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-2">
+                <span class="p-1.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <h4 class="text-sm font-semibold text-slate-200">Waitlist Priority Queue</h4>
+                  <p class="text-[11px] text-slate-400 font-mono">Unit I: PriorityQueue (Urgency Score)</p>
+                </div>
+              </div>
+            </div>
+            <div id="priority-queue-list" class="space-y-2 text-xs">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: INTERACTIVE DSA VISUALIZER INSPECTOR -->
+    <!-- ======================================================== -->
+    <div id="view-visualizer" class="hidden space-y-8">
+
+      <!-- Navigation for DSA Units 1-5 -->
+      <div class="flex flex-wrap gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-xl">
+        <button onclick="switchDsaSection('unit1')" id="nav-dsa-unit1" class="dsa-nav-btn px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition">
+          Unit I: Stacks & Queues
+        </button>
+        <button onclick="switchDsaSection('unit2')" id="nav-dsa-unit2" class="dsa-nav-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+          Unit II: Linked Lists & Search
+        </button>
+        <button onclick="switchDsaSection('unit3')" id="nav-dsa-unit3" class="dsa-nav-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+          Unit III: Hash Table & Sorting
+        </button>
+        <button onclick="switchDsaSection('unit4')" id="nav-dsa-unit4" class="dsa-nav-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+          Unit IV: Trees & Heaps
+        </button>
+        <button onclick="switchDsaSection('unit5')" id="nav-dsa-unit5" class="dsa-nav-btn px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+          Unit V: Graph Theory
+        </button>
+      </div>
+
+      <!-- UNIT 1 VIEW: LINEAR STRUCTURES -->
+      <div id="dsa-sec-unit1" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Undo Stack State -->
+          <div class="glass-panel p-5 rounded-2xl space-y-3">
+            <h3 class="text-sm font-bold text-slate-100 flex items-center justify-between">
+              <span>Undo Action Stack ADT</span>
+              <span id="undo-stack-count" class="text-xs font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">0 Elements</span>
+            </h3>
+            <p class="text-xs text-slate-400">LIFO operations: Adding books, loans, or returns push snapshots to this array-based Stack ADT.</p>
+            <div id="undo-stack-diagram" class="border border-slate-800 rounded-xl p-3 bg-slate-900/60 min-h-[140px] flex flex-col-reverse gap-2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Late Fee Expression Evaluator -->
+          <div class="glass-panel p-5 rounded-2xl space-y-3">
+            <h3 class="text-sm font-bold text-slate-100">Late Fee Expression Evaluator</h3>
+            <p class="text-xs text-slate-400">Uses Infix-to-Postfix conversion and stack-based operator evaluation.</p>
+            <div class="flex items-center space-x-2">
+              <input id="eval-formula-input" type="text" value="days * 2 + fee" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 font-mono" />
+              <button onclick="runVisualizerEval()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded-lg font-semibold text-white">Evaluate</button>
+            </div>
+            <div id="eval-result-box" class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs font-mono space-y-1">
+              <div>Postfix: <span id="eval-postfix" class="text-indigo-400">days 2 * fee +</span></div>
+              <div>Calculated Result: <span id="eval-final-res" class="text-emerald-400 font-bold">$20.00</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- UNIT 2 VIEW: LINKED LISTS & BASIC SEARCH -->
+      <div id="dsa-sec-unit2" class="hidden space-y-6">
+
+        <!-- Singly Linked List: Transaction History -->
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-100">Singly Linked List: Borrower Transaction Log</h3>
+              <p class="text-xs text-slate-400">Pointer Chain: <span class="font-mono text-indigo-400">HEAD -&gt; [Node] -&gt; [Node] -&gt; NULL</span></p>
+            </div>
+            <button onclick="refreshSllHistory()" class="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700">Refresh</button>
+          </div>
+          <div id="sll-chain-container" class="node-chain p-4 bg-slate-900/60 border border-slate-800 rounded-xl overflow-x-auto min-h-[90px]">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Doubly Linked List: Reader Navigator -->
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-100">Doubly Linked List: Recently Viewed Books Navigator</h3>
+              <p class="text-xs text-slate-400">Bidirectional Pointers: <span class="font-mono text-indigo-400">NULL &lt;- [Prev | Data | Next] -&gt; NULL</span></p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="navigateDll('prev')" class="px-3 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 flex items-center space-x-1">
+                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                <span>Prev Node</span>
+              </button>
+              <button onclick="navigateDll('next')" class="px-3 py-1 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded flex items-center space-x-1">
+                <span>Next Node</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+          <div id="dll-chain-container" class="node-chain p-4 bg-slate-900/60 border border-slate-800 rounded-xl overflow-x-auto min-h-[90px]">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- UNIT 3 VIEW: HASH TABLE & SEARCH BENCHMARK -->
+      <div id="dsa-sec-unit3" class="hidden space-y-6">
+
+        <!-- Hash Table Inspection -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-100 flex items-center space-x-2">
+                <span>Custom Hash Table State</span>
+                <span class="text-xs font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">Size: 101 | h(k) = k mod 101</span>
+              </h3>
+              <p class="text-xs text-slate-400">Inspect bucket occupation, collisions, and toggle collision resolution strategy.</p>
+            </div>
+
+            <!-- Collision Resolution Toggle -->
+            <div class="flex items-center space-x-3 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700">
+              <span class="text-xs text-slate-400">Collision Mode:</span>
+              <button onclick="toggleHashStrategy('chaining')" id="strat-chaining-btn" class="px-2.5 py-1 text-xs rounded-md bg-indigo-600 text-white font-medium">Chaining</button>
+              <button onclick="toggleHashStrategy('probing')" id="strat-probing-btn" class="px-2.5 py-1 text-xs rounded-md text-slate-400 hover:text-white font-medium">Linear Probing</button>
+            </div>
+          </div>
+
+          <!-- Hash Table Metrics -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider">Total Stored</span>
+              <p id="ht-metric-count" class="text-lg font-bold text-white font-mono">0</p>
+            </div>
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider">Load Factor (λ)</span>
+              <p id="ht-metric-load" class="text-lg font-bold text-indigo-400 font-mono">0.00</p>
+            </div>
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider">Occupied Buckets</span>
+              <p id="ht-metric-occupied" class="text-lg font-bold text-emerald-400 font-mono">0 / 101</p>
+            </div>
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider">Max Chain Depth</span>
+              <p id="ht-metric-maxchain" class="text-lg font-bold text-amber-400 font-mono">0</p>
+            </div>
+          </div>
+
+          <!-- 101 Buckets Grid Matrix -->
+          <div>
+            <h4 class="text-xs font-semibold text-slate-400 mb-2">101-Bucket Array Memory Layout</h4>
+            <div id="hash-table-buckets-grid" class="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-15 gap-1.5 max-h-72 overflow-y-auto p-2 bg-slate-900/80 rounded-xl border border-slate-800">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Benchmark Module -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <div>
+            <h3 class="text-sm font-bold text-slate-100">Multi-Algorithm Search Step Benchmark</h3>
+            <p class="text-xs text-slate-400">Compares execution step counters of Sequential vs. Binary (Iterative/Recursive) vs. Interpolation Search on uniformly distributed IDs.</p>
+          </div>
+
+          <div class="flex items-center space-x-3">
+            <input id="search-benchmark-id" type="number" value="109" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 font-mono w-40" />
+            <button onclick="runSearchBenchmark()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded-lg font-semibold text-white">Execute Benchmark</button>
+          </div>
+
+          <!-- Benchmark Results Cards -->
+          <div id="benchmark-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- UNIT 4 VIEW: TREES & HEAPS -->
+      <div id="dsa-sec-unit4" class="hidden space-y-6">
+
+        <!-- AVL Tree Visualizer & Rotations -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-slate-100 flex items-center space-x-2">
+                <span>Self-Balancing AVL Tree</span>
+                <span id="avl-rotation-badge" class="text-xs font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded">Balanced</span>
+              </h3>
+              <p class="text-xs text-slate-400">Enforces balance factor ∈ {-1, 0, 1} via LL, RR, LR, and RL rotations.</p>
+            </div>
+            <button onclick="refreshAvlTree()" class="px-3 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700">Re-render Tree</button>
+          </div>
+
+          <!-- Tree Visualizer Canvas / Container -->
+          <div id="avl-tree-canvas-container" class="w-full h-80 bg-slate-900/80 rounded-xl border border-slate-800 relative overflow-auto p-4 flex items-center justify-center">
+            <!-- Rendered SVG / Canvas -->
+          </div>
+
+          <!-- Traversals Tabs -->
+          <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center space-x-3 text-xs font-semibold">
+              <span class="text-slate-400">Tree Traversals:</span>
+              <button onclick="showTraversal('inorder')" id="trav-btn-inorder" class="px-2.5 py-0.5 rounded bg-indigo-600 text-white">In-order (Sorted)</button>
+              <button onclick="showTraversal('preorder')" id="trav-btn-preorder" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white">Pre-order</button>
+              <button onclick="showTraversal('postorder')" id="trav-btn-postorder" class="px-2.5 py-0.5 rounded text-slate-400 hover:text-white">Post-order</button>
+            </div>
+            <div id="traversal-display" class="font-mono text-xs text-indigo-300 overflow-x-auto whitespace-nowrap p-2 bg-slate-950 rounded">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Heaps & B-Tree -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Min-Heap & Max-Heap -->
+          <div class="glass-panel p-5 rounded-2xl space-y-4">
+            <h3 class="text-sm font-bold text-slate-100">Binary Heaps (Array-Based)</h3>
+            <div class="space-y-3">
+              <div>
+                <span class="text-xs font-semibold text-emerald-400">Min-Heap: Earliest Due Dates (Root = O(1))</span>
+                <div id="min-heap-array" class="flex flex-wrap gap-1.5 mt-1 font-mono text-xs">
+                  <!-- Rendered via JS -->
+                </div>
+              </div>
+              <div>
+                <span class="text-xs font-semibold text-amber-400">Max-Heap: Trending Books (Root = Highest Borrows)</span>
+                <div id="max-heap-array" class="flex flex-wrap gap-1.5 mt-1 font-mono text-xs">
+                  <!-- Rendered via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- B-Tree Index Simulation -->
+          <div class="glass-panel p-5 rounded-2xl space-y-4">
+            <h3 class="text-sm font-bold text-slate-100">B-Tree Multi-Key Block Index (t = 3)</h3>
+            <p class="text-xs text-slate-400">Simulates multi-key disk block indices for fast secondary storage lookup.</p>
+            <div id="btree-container" class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs font-mono overflow-auto max-h-56">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- UNIT 5 VIEW: GRAPH THEORY -->
+      <div id="dsa-sec-unit5" class="hidden space-y-6">
+
+        <!-- Graph Topology & Traversal Results -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-100">Library Knowledge & Recommendation Graph</h3>
+              <p class="text-xs text-slate-400">Vertices: Books & Topics | Edges: Co-borrowed & Prerequisite relationships</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <select id="graph-start-node" class="bg-slate-900 text-xs text-slate-300 border border-slate-700 rounded-lg px-2.5 py-1.5">
+                <option value="B101">Intro to Algorithms (B101)</option>
+                <option value="B102">Clean Code (B102)</option>
+                <option value="B103">Operating Systems (B103)</option>
+                <option value="B104">Artificial Intelligence (B104)</option>
+                <option value="B108">Database Systems (B108)</option>
+              </select>
+              <button onclick="runBfsRecommendation()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded-lg font-semibold text-white">BFS Shortest Hop</button>
+              <button onclick="runDfsExploration()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-xs rounded-lg font-semibold text-white">DFS Topic Chain</button>
+            </div>
+          </div>
+
+          <!-- Traversal Trace Box -->
+          <div id="graph-traversal-box" class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 text-xs space-y-2">
+            <span class="font-bold text-slate-300">Traversal Output & Discovery Trace:</span>
+            <div id="graph-trace-content" class="text-slate-400 font-mono">Select an algorithm and click above to run graph exploration.</div>
+          </div>
+
+          <!-- Graph Representations: Adjacency List & Matrix -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div>
+              <h4 class="text-xs font-semibold text-slate-300 mb-1.5">Adjacency List Representation</h4>
+              <div id="adj-list-container" class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs font-mono max-h-64 overflow-y-auto space-y-1">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+            <div>
+              <h4 class="text-xs font-semibold text-slate-300 mb-1.5">Adjacency Matrix Representation</h4>
+              <div id="adj-matrix-container" class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs font-mono max-h-64 overflow-auto">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODALS -->
+  <!-- ======================================================== -->
+
+  <!-- Add Book Modal -->
+  <div id="modal-add-book" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel-accent max-w-md w-full p-6 rounded-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+          <i data-lucide="book-plus" class="w-5 h-5 text-indigo-400"></i>
+          <span>Add New Book to Master DSA</span>
+        </h3>
+        <button onclick="closeAddBookModal()" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+
+      <form id="form-add-book" onsubmit="submitAddBook(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1">Book Title</label>
+          <input required id="new-book-title" type="text" placeholder="e.g., Compilers: Principles & Techniques" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">Author</label>
+          <input required id="new-book-author" type="text" placeholder="e.g., Alfred Aho" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">ISBN</label>
+            <input required id="new-book-isbn" type="text" placeholder="978-0321486813" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">Publication Year</label>
+            <input required id="new-book-year" type="number" value="2022" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">Category</label>
+            <select id="new-book-category" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
+              <option value="Algorithms">Algorithms</option>
+              <option value="Systems">Systems</option>
+              <option value="Software Engineering">Software Engineering</option>
+              <option value="AI & ML">AI & ML</option>
+              <option value="Databases">Databases</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">Copies Available</label>
+            <input required id="new-book-copies" type="number" value="3" min="1" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeAddBookModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-semibold shadow-lg shadow-indigo-600/30">Add Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Issue Book Modal -->
+  <div id="modal-issue-book" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel-accent max-w-sm w-full p-6 rounded-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+          <i data-lucide="share" class="w-5 h-5 text-indigo-400"></i>
+          <span>Issue Book</span>
+        </h3>
+        <button onclick="closeIssueModal()" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <div class="text-xs space-y-3">
+        <p id="issue-modal-title" class="text-slate-200 font-semibold"></p>
+        <div>
+          <label class="block text-slate-300 mb-1">Select Student / Borrower</label>
+          <select id="issue-student-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
+            <option value="STU1001">Alice Johnson (Student)</option>
+            <option value="STU1002">Bob Smith (Student)</option>
+            <option value="STU1003">Carol Danvers (Faculty)</option>
+            <option value="STU1004">David Miller (VIP)</option>
+            <option value="STU1005">Elena Rostova (Student)</option>
+          </select>
+        </div>
+        <div class="flex items-center space-x-2">
+          <input type="checkbox" id="issue-is-vip" class="rounded bg-slate-900 border-slate-700 text-indigo-600" />
+          <label for="issue-is-vip" class="text-slate-300">VIP / Urgent Request (Enqueues at Front of Deque if unavailable)</label>
+        </div>
+        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-800">
+          <button onclick="closeIssueModal()" class="px-4 py-2 bg-slate-800 rounded-lg text-slate-300">Cancel</button>
+          <button onclick="submitIssueBook()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-semibold">Confirm Issue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fine Evaluator Modal -->
+  <div id="modal-fine-eval" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel-accent max-w-md w-full p-6 rounded-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-700">
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+          <i data-lucide="calculator" class="w-5 h-5 text-indigo-400"></i>
+          <span>Fine Formula Evaluator (Stack ADT)</span>
+        </h3>
+        <button onclick="closeFineCalculatorModal()" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1">Formula (Supports +, -, *, /, ^ and variables)</label>
+          <input id="modal-formula-input" type="text" value="days * rate + fee" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white font-mono" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">Overdue Days (days)</label>
+            <input id="modal-formula-days" type="number" value="7" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white" />
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">Daily Rate (rate = 2.5)</label>
+            <input disabled value="2.5" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-slate-400" />
+          </div>
+        </div>
+        <button onclick="computeModalFine()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold text-white transition">
+          Convert & Evaluate via Stack
+        </button>
+        <div id="modal-fine-result" class="hidden p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1 font-mono">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
