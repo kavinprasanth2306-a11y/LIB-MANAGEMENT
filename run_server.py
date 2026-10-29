@@ -13,8 +13,18 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args):
         # Clean terminal logging
-        sys.stdout.write(f"[LuminaLib Web Server] {self.address_string()} - {format % args}\n")
-        sys.stdout.flush()
+        try:
+            sys.stdout.write(f"[LuminaLib Web Server] {self.address_string()} - {format % args}\n")
+            sys.stdout.flush()
+        except Exception:
+            pass
+
+    def copyfile(self, source, outputfile):
+        """Handle client disconnects gracefully without crashing the server."""
+        try:
+            super().copyfile(source, outputfile)
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+            pass
 
 def main():
     os.chdir(DIRECTORY)
