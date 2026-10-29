@@ -1503,6 +1503,7 @@
 
       showToast("Checkout Confirmed", `Successfully issued "${book.title}" to ${memberId}.`, "success");
       renderFullCatalog();
+      populateDeskDropdowns();
       updateMetrics();
     }
 
@@ -1561,6 +1562,7 @@
       }
 
       renderFullCatalog();
+      populateDeskDropdowns();
       updateMetrics();
     }
 
@@ -1604,6 +1606,7 @@
       }
 
       renderFullCatalog();
+      populateDeskDropdowns();
       updateMetrics();
       if (!document.getElementById("view-visualizer").classList.contains("hidden")) {
         renderDsaVisualizer();
@@ -1822,6 +1825,7 @@
 
       closeAddBookModal();
       renderFullCatalog();
+      populateDeskDropdowns();
       showToast("Book Created", `Added "${title}" with ISBN ${isbn} to Hash Table.`, "success");
     }
 
@@ -1830,6 +1834,7 @@
       seedInitialData();
       renderFullCatalog();
       renderDllChain();
+      populateDeskDropdowns();
       updateMetrics();
       if (window.lucide) lucide.createIcons();
     });
