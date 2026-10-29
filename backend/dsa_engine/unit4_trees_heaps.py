@@ -608,3 +608,4 @@ class BTree:
                 "children": [_convert(c) for c in node.children]
             }
         return _convert(self.root)
+

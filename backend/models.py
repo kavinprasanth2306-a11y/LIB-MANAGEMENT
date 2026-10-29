@@ -59,3 +59,4 @@ class SortRequest(BaseModel):
     field: str = "title"        # "title", "year", "borrow_count", "available_copies"
     algorithm: str = "merge_sort" # "insertion_sort", "bubble_sort", "selection_sort", "merge_sort"
     ascending: bool = True
+

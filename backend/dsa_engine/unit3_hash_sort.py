@@ -421,3 +421,4 @@ def merge_sort(items, key_extractor, ascending=True):
 
     sorted_arr = _merge_sort_rec(arr)
     return {"sorted": sorted_arr, "comparisons": comparisons[0], "swaps": moves[0], "algorithm": "Merge Sort"}
+

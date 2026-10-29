@@ -277,3 +277,4 @@ class Graph:
             "edges": edges_data,
             "directed": self.directed
         }
+
