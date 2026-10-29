@@ -473,3 +473,4 @@ window.addEventListener("DOMContentLoaded", async () => {
   updateMetrics();
   if (window.lucide) lucide.createIcons();
 });
+
