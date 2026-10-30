@@ -471,6 +471,7 @@ async function updateMetrics() {
 function updateUserUi() {
   const widget = document.getElementById("user-profile-widget");
   const addBtn = document.getElementById("header-add-book-btn");
+  const sCard = document.getElementById("sidebar-user-card");
   const sAvatar = document.getElementById("sidebar-user-avatar");
   const sName = document.getElementById("sidebar-user-name");
   const sRole = document.getElementById("sidebar-user-role");
@@ -493,7 +494,7 @@ function updateUserUi() {
               ${isAdm ? '👑 Librarian' : `${currentUser.role || 'Member'} (${currentUser.member_id || 'ID'})`}
             </div>
           </div>
-          <button onclick="handleLogout()" title="Sign Out / Switch Account" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition ml-1">
+          <button onclick="handleLogout()" title="Sign Out / Switch Account" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition ml-1 cursor-pointer">
             <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -501,16 +502,28 @@ function updateUserUi() {
     }
 
     // Sidebar User Card
+    if (sCard) {
+      sCard.onclick = () => openAuthModal('signin');
+      sCard.className = "p-3 bg-white/90 hover:bg-slate-50 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between transition cursor-pointer";
+      sCard.title = "Click to Switch User / View Account";
+    }
+
     if (sAvatar) {
       sAvatar.innerText = initial;
       sAvatar.className = `w-8 h-8 rounded-xl bg-gradient-to-tr ${isAdm ? 'from-indigo-600 to-purple-600' : 'from-emerald-500 to-teal-500'} text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs`;
     }
     if (sName) sName.innerText = currentUser.full_name || currentUser.username;
-    if (sRole) sRole.innerText = isAdm ? '👑 Librarian (Admin)' : `${currentUser.role} • ${currentUser.member_id}`;
+    if (sRole) {
+      sRole.innerText = isAdm ? '👑 Librarian (Admin)' : `${currentUser.role} • ${currentUser.member_id}`;
+      sRole.className = "text-[10px] font-mono text-slate-400 truncate";
+    }
     if (sAuthBtn) {
-      sAuthBtn.onclick = handleLogout;
+      sAuthBtn.onclick = (e) => {
+        e.stopPropagation();
+        handleLogout();
+      };
       sAuthBtn.title = "Sign Out";
-      sAuthBtn.className = "p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition shrink-0";
+      sAuthBtn.className = "p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition shrink-0 cursor-pointer";
       sAuthBtn.innerHTML = `<i data-lucide="log-out" class="w-4 h-4"></i>`;
     }
 
@@ -523,23 +536,35 @@ function updateUserUi() {
     // Logged out / Guest view
     if (widget) {
       widget.innerHTML = `
-        <button onclick="openAuthModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
+        <button onclick="openAuthModal('signin')" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition cursor-pointer">
           <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
-          <span>Sign In</span>
+          <span>Sign In / Register</span>
         </button>
       `;
     }
 
+    if (sCard) {
+      sCard.onclick = () => openAuthModal('signin');
+      sCard.className = "p-3 bg-indigo-50/70 hover:bg-indigo-100/70 rounded-2xl border border-indigo-200/90 hover:border-indigo-400 shadow-xs hover:shadow-md flex items-center justify-between transition-all duration-200 cursor-pointer group";
+      sCard.title = "Click to Sign In or Create an Account";
+    }
+
     if (sAvatar) {
       sAvatar.innerText = "?";
-      sAvatar.className = "w-8 h-8 rounded-xl bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs";
+      sAvatar.className = "w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs group-hover:scale-105 transition-transform";
     }
     if (sName) sName.innerText = "Not Logged In";
-    if (sRole) sRole.innerText = "Guest Mode";
+    if (sRole) {
+      sRole.innerText = "Click to Sign In / Register →";
+      sRole.className = "text-[10px] font-mono text-indigo-600 font-bold truncate";
+    }
     if (sAuthBtn) {
-      sAuthBtn.onclick = openAuthModal;
-      sAuthBtn.title = "Sign In";
-      sAuthBtn.className = "p-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition shrink-0";
+      sAuthBtn.onclick = (e) => {
+        e.stopPropagation();
+        openAuthModal('signin');
+      };
+      sAuthBtn.title = "Click to Sign In or Create an Account";
+      sAuthBtn.className = "p-1.5 text-indigo-600 group-hover:text-indigo-800 bg-white group-hover:bg-indigo-50 rounded-lg border border-indigo-200 shadow-xs transition shrink-0 cursor-pointer";
       sAuthBtn.innerHTML = `<i data-lucide="log-in" class="w-4 h-4"></i>`;
     }
 
@@ -549,15 +574,22 @@ function updateUserUi() {
   if (window.lucide) lucide.createIcons();
 }
 
-function openAuthModal() {
+function openAuthModal(tab = 'signin') {
   const loginPage = document.getElementById("login-page") || document.getElementById("modal-auth");
-  if (loginPage) loginPage.classList.remove("hidden");
+  if (loginPage) {
+    loginPage.classList.remove("hidden");
+    loginPage.style.display = "flex";
+  }
+  switchAuthTab(tab);
   if (window.lucide) lucide.createIcons();
 }
 
 function closeAuthModal() {
-  document.getElementById("login-page")?.classList.add("hidden");
-  document.getElementById("modal-auth")?.classList.add("hidden");
+  const loginPage = document.getElementById("login-page") || document.getElementById("modal-auth");
+  if (loginPage) {
+    loginPage.classList.add("hidden");
+    loginPage.style.display = "none";
+  }
 }
 
 function continueAsGuest() {
@@ -572,16 +604,37 @@ function switchAuthTab(tab) {
   const tabRegister = document.getElementById("auth-tab-register");
 
   if (tab === "signin") {
-    signinForm?.classList.remove("hidden");
-    registerForm?.classList.add("hidden");
-    if (tabSignin) tabSignin.className = "flex-1 py-1.5 rounded-lg bg-white text-indigo-600 shadow-xs transition";
-    if (tabRegister) tabRegister.className = "flex-1 py-1.5 rounded-lg hover:text-slate-900 transition";
+    if (signinForm) {
+      signinForm.classList.remove("hidden");
+      signinForm.style.display = "block";
+    }
+    if (registerForm) {
+      registerForm.classList.add("hidden");
+      registerForm.style.display = "none";
+    }
+    if (tabSignin) {
+      tabSignin.className = "flex-1 py-2 rounded-xl bg-white text-indigo-600 shadow-sm font-bold transition cursor-pointer";
+    }
+    if (tabRegister) {
+      tabRegister.className = "flex-1 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-bold transition cursor-pointer";
+    }
   } else {
-    signinForm?.classList.add("hidden");
-    registerForm?.classList.remove("hidden");
-    if (tabRegister) tabRegister.className = "flex-1 py-1.5 rounded-lg bg-white text-emerald-600 shadow-xs transition";
-    if (tabSignin) tabSignin.className = "flex-1 py-1.5 rounded-lg hover:text-slate-900 transition";
+    if (signinForm) {
+      signinForm.classList.add("hidden");
+      signinForm.style.display = "none";
+    }
+    if (registerForm) {
+      registerForm.classList.remove("hidden");
+      registerForm.style.display = "block";
+    }
+    if (tabRegister) {
+      tabRegister.className = "flex-1 py-2 rounded-xl bg-white text-emerald-600 shadow-sm font-bold transition cursor-pointer";
+    }
+    if (tabSignin) {
+      tabSignin.className = "flex-1 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-bold transition cursor-pointer";
+    }
   }
+  if (window.lucide) lucide.createIcons();
 }
 
 async function quickLogin(username, password) {
