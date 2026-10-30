@@ -471,42 +471,78 @@ async function updateMetrics() {
 function updateUserUi() {
   const widget = document.getElementById("user-profile-widget");
   const addBtn = document.getElementById("header-add-book-btn");
-
-  if (!widget) return;
+  const sAvatar = document.getElementById("sidebar-user-avatar");
+  const sName = document.getElementById("sidebar-user-name");
+  const sRole = document.getElementById("sidebar-user-role");
+  const sAuthBtn = document.getElementById("sidebar-auth-btn");
 
   if (currentUser) {
     const isAdm = currentUser.is_admin || (currentUser.role && currentUser.role.toLowerCase() === "admin");
     const initial = (currentUser.full_name || currentUser.username || "U").charAt(0).toUpperCase();
 
-    widget.innerHTML = `
-      <div class="flex items-center space-x-2.5 bg-white/80 border border-slate-200/80 rounded-2xl px-3 py-1.5 shadow-xs">
-        <div class="w-7 h-7 rounded-xl bg-gradient-to-tr ${isAdm ? 'from-indigo-600 to-purple-600' : 'from-emerald-500 to-teal-500'} text-white flex items-center justify-center font-bold text-xs shadow-xs">
-          ${initial}
-        </div>
-        <div class="text-left text-xs leading-tight">
-          <div class="font-extrabold text-slate-900 truncate max-w-[110px]">${currentUser.full_name || currentUser.username}</div>
-          <div class="text-[10px] font-mono ${isAdm ? 'text-indigo-600 font-bold' : 'text-slate-500'}">
-            ${isAdm ? '👑 Librarian' : `${currentUser.role || 'Member'} (${currentUser.member_id || 'ID'})`}
+    // Top Header Widget
+    if (widget) {
+      widget.innerHTML = `
+        <div class="flex items-center space-x-2.5 bg-white/90 border border-slate-200/90 rounded-2xl px-3 py-1.5 shadow-xs">
+          <div class="w-7 h-7 rounded-xl bg-gradient-to-tr ${isAdm ? 'from-indigo-600 to-purple-600' : 'from-emerald-500 to-teal-500'} text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            ${initial}
           </div>
+          <div class="text-left text-xs leading-tight">
+            <div class="font-extrabold text-slate-900 truncate max-w-[120px]">${currentUser.full_name || currentUser.username}</div>
+            <div class="text-[10px] font-mono ${isAdm ? 'text-indigo-600 font-bold' : 'text-slate-500'}">
+              ${isAdm ? '👑 Librarian' : `${currentUser.role || 'Member'} (${currentUser.member_id || 'ID'})`}
+            </div>
+          </div>
+          <button onclick="handleLogout()" title="Sign Out / Switch Account" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition ml-1">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          </button>
         </div>
-        <button onclick="handleLogout()" title="Switch Account / Sign Out" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition ml-0.5">
-          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-    `;
+      `;
+    }
 
-    // Librarian only can add books
+    // Sidebar User Card
+    if (sAvatar) {
+      sAvatar.innerText = initial;
+      sAvatar.className = `w-8 h-8 rounded-xl bg-gradient-to-tr ${isAdm ? 'from-indigo-600 to-purple-600' : 'from-emerald-500 to-teal-500'} text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs`;
+    }
+    if (sName) sName.innerText = currentUser.full_name || currentUser.username;
+    if (sRole) sRole.innerText = isAdm ? '👑 Librarian (Admin)' : `${currentUser.role} • ${currentUser.member_id}`;
+    if (sAuthBtn) {
+      sAuthBtn.onclick = handleLogout;
+      sAuthBtn.title = "Sign Out";
+      sAuthBtn.className = "p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition shrink-0";
+      sAuthBtn.innerHTML = `<i data-lucide="log-out" class="w-4 h-4"></i>`;
+    }
+
+    // Permissions: Librarian only can add books
     if (addBtn) {
       if (isAdm) addBtn.classList.remove("hidden");
       else addBtn.classList.add("hidden");
     }
   } else {
-    widget.innerHTML = `
-      <button onclick="openAuthModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
-        <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
-        <span>Sign In</span>
-      </button>
-    `;
+    // Logged out / Guest view
+    if (widget) {
+      widget.innerHTML = `
+        <button onclick="openAuthModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
+          <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+          <span>Sign In</span>
+        </button>
+      `;
+    }
+
+    if (sAvatar) {
+      sAvatar.innerText = "?";
+      sAvatar.className = "w-8 h-8 rounded-xl bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs";
+    }
+    if (sName) sName.innerText = "Not Logged In";
+    if (sRole) sRole.innerText = "Guest Mode";
+    if (sAuthBtn) {
+      sAuthBtn.onclick = openAuthModal;
+      sAuthBtn.title = "Sign In";
+      sAuthBtn.className = "p-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition shrink-0";
+      sAuthBtn.innerHTML = `<i data-lucide="log-in" class="w-4 h-4"></i>`;
+    }
+
     if (addBtn) addBtn.classList.add("hidden");
   }
 
@@ -514,13 +550,19 @@ function updateUserUi() {
 }
 
 function openAuthModal() {
-  const modal = document.getElementById("modal-auth");
-  if (modal) modal.classList.remove("hidden");
+  const loginPage = document.getElementById("login-page") || document.getElementById("modal-auth");
+  if (loginPage) loginPage.classList.remove("hidden");
   if (window.lucide) lucide.createIcons();
 }
 
 function closeAuthModal() {
+  document.getElementById("login-page")?.classList.add("hidden");
   document.getElementById("modal-auth")?.classList.add("hidden");
+}
+
+function continueAsGuest() {
+  closeAuthModal();
+  showToast("Guest Mode", "Browsing in read-only mode. Sign in anytime to borrow books.", "info");
 }
 
 function switchAuthTab(tab) {
@@ -672,6 +714,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderDllNavigator();
   updateMetrics();
   updateUserUi();
+
+  // Automatically display the Login Page if not signed in
+  if (!currentUser) {
+    openAuthModal();
+  }
+
   if (window.lucide) lucide.createIcons();
 });
 
