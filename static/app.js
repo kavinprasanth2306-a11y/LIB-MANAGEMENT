@@ -34,6 +34,14 @@ function quickSort(arr, comparator) {
 
 // Global cached state
 let allBooks = [];
+let currentUser = null;
+
+try {
+  const saved = localStorage.getItem("lumina_user");
+  if (saved) currentUser = JSON.parse(saved);
+} catch (e) {
+  currentUser = null;
+}
 
 // Toast System
 function showToast(title, message, type = "info") {
@@ -243,10 +251,18 @@ async function populateDeskDropdowns() {
   const issueSelect = document.getElementById("desk-issue-book-select");
   const returnSelect = document.getElementById("desk-return-book-select");
   const memberSelect = document.getElementById("desk-issue-member-select");
+  const returnMemberInput = document.getElementById("desk-return-member");
 
-  issueSelect.innerHTML = allBooks.map(b => `<option value="${b.isbn}">${b.title} (${b.available_copies} available)</option>`).join("");
-  returnSelect.innerHTML = allBooks.map(b => `<option value="${b.isbn}">${b.title}</option>`).join("");
-  memberSelect.innerHTML = members.map(m => `<option value="${m.member_id}">${m.member_id} - ${m.full_name} (${m.role})</option>`).join("");
+  if (issueSelect && returnSelect && memberSelect) {
+    issueSelect.innerHTML = allBooks.map(b => `<option value="${b.isbn}">${b.title} (${b.available_copies} available)</option>`).join("");
+    returnSelect.innerHTML = allBooks.map(b => `<option value="${b.isbn}">${b.title}</option>`).join("");
+    memberSelect.innerHTML = members.map(m => `<option value="${m.member_id}">${m.member_id} - ${m.full_name} (${m.role})</option>`).join("");
+
+    if (currentUser && currentUser.member_id) {
+      memberSelect.value = currentUser.member_id;
+      if (returnMemberInput) returnMemberInput.value = currentUser.member_id;
+    }
+  }
 }
 
 async function handleIssueSubmit() {
@@ -255,18 +271,26 @@ async function handleIssueSubmit() {
   handleQuickCheckout(isbn, member_id);
 }
 
-async function handleQuickCheckout(isbn, member_id = "MEM101") {
+async function handleQuickCheckout(isbn, member_id = null) {
+  if (!currentUser) {
+    showToast("Sign In Required", "Please sign in to borrow or join the waitlist.", "warning");
+    openAuthModal();
+    return;
+  }
+
+  const targetMember = member_id || currentUser.member_id || "MEM101";
+
   const res = await fetch("/api/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ isbn, member_id })
+    body: JSON.stringify({ isbn, member_id: targetMember })
   });
   const data = await res.json();
 
   if (data.waitlisted) {
-    showToast("Waitlist (FIFO)", `Out of stock. Added ${member_id} to Queue.`, "warning");
+    showToast("Waitlist (FIFO)", `Out of stock. Added ${targetMember} to Queue.`, "warning");
   } else {
-    showToast("Issued", `Book checked out to ${member_id}.`, "success");
+    showToast("Issued", `Book checked out to ${targetMember}.`, "success");
   }
   await fetchBooks();
   renderFullCatalog();
@@ -274,7 +298,7 @@ async function handleQuickCheckout(isbn, member_id = "MEM101") {
 
 async function handleReturnSubmit() {
   const isbn = document.getElementById("desk-return-book-select").value;
-  const member_id = document.getElementById("desk-return-member").value;
+  const member_id = document.getElementById("desk-return-member").value || (currentUser ? currentUser.member_id : "MEM101");
 
   const res = await fetch("/api/return", {
     method: "POST",
@@ -293,6 +317,11 @@ async function handleReturnSubmit() {
 }
 
 async function executeUndoAction() {
+  if (currentUser && !currentUser.is_admin && currentUser.role.toLowerCase() !== "admin") {
+    showToast("Admin Only", "Only the Librarian / Admin can undo global library actions.", "warning");
+    return;
+  }
+
   const res = await fetch("/api/undo", { method: "POST" });
   const data = await res.json();
   if (data.success) {
@@ -436,8 +465,179 @@ async function updateMetrics() {
   document.getElementById("sidebar-hash-count").innerText = state.metrics.hash_size;
 }
 
+// =========================================================
+// AUTHENTICATION & ROLE-BASED ACCESS CONTROL (RBAC)
+// =========================================================
+function updateUserUi() {
+  const widget = document.getElementById("user-profile-widget");
+  const addBtn = document.getElementById("header-add-book-btn");
+
+  if (!widget) return;
+
+  if (currentUser) {
+    const isAdm = currentUser.is_admin || (currentUser.role && currentUser.role.toLowerCase() === "admin");
+    const initial = (currentUser.full_name || currentUser.username || "U").charAt(0).toUpperCase();
+
+    widget.innerHTML = `
+      <div class="flex items-center space-x-2.5 bg-white/80 border border-slate-200/80 rounded-2xl px-3 py-1.5 shadow-xs">
+        <div class="w-7 h-7 rounded-xl bg-gradient-to-tr ${isAdm ? 'from-indigo-600 to-purple-600' : 'from-emerald-500 to-teal-500'} text-white flex items-center justify-center font-bold text-xs shadow-xs">
+          ${initial}
+        </div>
+        <div class="text-left text-xs leading-tight">
+          <div class="font-extrabold text-slate-900 truncate max-w-[110px]">${currentUser.full_name || currentUser.username}</div>
+          <div class="text-[10px] font-mono ${isAdm ? 'text-indigo-600 font-bold' : 'text-slate-500'}">
+            ${isAdm ? '👑 Librarian' : `${currentUser.role || 'Member'} (${currentUser.member_id || 'ID'})`}
+          </div>
+        </div>
+        <button onclick="handleLogout()" title="Switch Account / Sign Out" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition ml-0.5">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    `;
+
+    // Librarian only can add books
+    if (addBtn) {
+      if (isAdm) addBtn.classList.remove("hidden");
+      else addBtn.classList.add("hidden");
+    }
+  } else {
+    widget.innerHTML = `
+      <button onclick="openAuthModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
+        <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+        <span>Sign In</span>
+      </button>
+    `;
+    if (addBtn) addBtn.classList.add("hidden");
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function openAuthModal() {
+  const modal = document.getElementById("modal-auth");
+  if (modal) modal.classList.remove("hidden");
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeAuthModal() {
+  document.getElementById("modal-auth")?.classList.add("hidden");
+}
+
+function switchAuthTab(tab) {
+  const signinForm = document.getElementById("form-auth-signin");
+  const registerForm = document.getElementById("form-auth-register");
+  const tabSignin = document.getElementById("auth-tab-signin");
+  const tabRegister = document.getElementById("auth-tab-register");
+
+  if (tab === "signin") {
+    signinForm?.classList.remove("hidden");
+    registerForm?.classList.add("hidden");
+    if (tabSignin) tabSignin.className = "flex-1 py-1.5 rounded-lg bg-white text-indigo-600 shadow-xs transition";
+    if (tabRegister) tabRegister.className = "flex-1 py-1.5 rounded-lg hover:text-slate-900 transition";
+  } else {
+    signinForm?.classList.add("hidden");
+    registerForm?.classList.remove("hidden");
+    if (tabRegister) tabRegister.className = "flex-1 py-1.5 rounded-lg bg-white text-emerald-600 shadow-xs transition";
+    if (tabSignin) tabSignin.className = "flex-1 py-1.5 rounded-lg hover:text-slate-900 transition";
+  }
+}
+
+async function quickLogin(username, password) {
+  const uInput = document.getElementById("signin-username");
+  const pInput = document.getElementById("signin-password");
+  if (uInput) uInput.value = username;
+  if (pInput) pInput.value = password;
+  await performLogin(username, password);
+}
+
+async function handleSignInSubmit(e) {
+  e.preventDefault();
+  const username = document.getElementById("signin-username").value.trim();
+  const password = document.getElementById("signin-password").value.trim();
+  await performLogin(username, password);
+}
+
+async function performLogin(username, password) {
+  const btn = document.getElementById("signin-submit-btn");
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      currentUser = data.user;
+      localStorage.setItem("lumina_user", JSON.stringify(currentUser));
+      closeAuthModal();
+      updateUserUi();
+      populateDeskDropdowns();
+      showToast("Signed In", `Logged in as ${currentUser.full_name} (${currentUser.role})`, "success");
+    } else {
+      showToast("Login Failed", data.message || "Invalid credentials", "error");
+    }
+  } catch (err) {
+    showToast("Server Error", "Could not connect to authentication API.", "error");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function handleRegisterSubmit(e) {
+  e.preventDefault();
+  const full_name = document.getElementById("register-fullname").value.trim();
+  const username = document.getElementById("register-username").value.trim();
+  const role = document.getElementById("register-role").value;
+  const password = document.getElementById("register-password").value.trim();
+  const btn = document.getElementById("register-submit-btn");
+
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name, username, role, password })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      currentUser = data.user;
+      localStorage.setItem("lumina_user", JSON.stringify(currentUser));
+      closeAuthModal();
+      updateUserUi();
+      populateDeskDropdowns();
+      showToast("Account Created", data.message || "Registered successfully!", "success");
+    } else {
+      showToast("Registration Failed", data.message || "Could not register account.", "error");
+    }
+  } catch (err) {
+    showToast("Server Error", "Could not connect to authentication API.", "error");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem("lumina_user");
+  updateUserUi();
+  populateDeskDropdowns();
+  showToast("Signed Out", "You have signed out. Sign in to borrow or manage books.", "info");
+  openAuthModal();
+}
+
 // Modal Form
-function openAddBookModal() { document.getElementById("modal-add-book").classList.remove("hidden"); }
+function openAddBookModal() {
+  if (currentUser && !currentUser.is_admin && currentUser.role.toLowerCase() !== "admin") {
+    showToast("Admin Privilege Required", "Only the Librarian / Admin can add books to the catalog.", "warning");
+    return;
+  }
+  document.getElementById("modal-add-book").classList.remove("hidden");
+}
 function closeAddBookModal() { document.getElementById("modal-add-book").classList.add("hidden"); }
 
 async function handleAddBookSubmit(e) {
@@ -471,6 +671,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderFullCatalog();
   renderDllNavigator();
   updateMetrics();
+  updateUserUi();
   if (window.lucide) lucide.createIcons();
 });
 

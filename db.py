@@ -3,8 +3,13 @@ db.py - SQLite Database Schema & Persistence
 """
 import sqlite3
 import os
+import hashlib
 
 DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "library.db")
+
+def hash_password(password: str) -> str:
+    """Computes SHA-256 hash for secure credential storage."""
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 def get_connection():
     conn = sqlite3.connect(DB_FILE)
@@ -34,6 +39,18 @@ def init_db():
         member_id TEXT PRIMARY KEY,
         full_name TEXT NOT NULL,
         role TEXT NOT NULL
+    )
+    """)
+
+    # Users Table for Authentication & RBAC
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        username TEXT PRIMARY KEY,
+        password_hash TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        role TEXT NOT NULL,
+        member_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
@@ -104,5 +121,29 @@ def init_db():
         cursor.execute("INSERT INTO waitlists (isbn, member_id) VALUES ('978-0134092669', 'MEM104')")
 
         conn.commit()
+
+    # Seed Users if empty
+    cursor.execute("SELECT COUNT(*) as cnt FROM users")
+    if cursor.fetchone()["cnt"] == 0:
+        seed_users = [
+            ("admin", hash_password("admin123"), "Head Librarian", "admin", "ADMIN"),
+            ("turing", hash_password("password123"), "Alan Turing", "Researcher", "MEM101"),
+            ("ada", hash_password("password123"), "Ada Lovelace", "Fellow", "MEM102"),
+            ("grace", hash_password("password123"), "Grace Hopper", "Faculty", "MEM103"),
+            ("linus", hash_password("password123"), "Linus Torvalds", "Student", "MEM104"),
+            ("liskov", hash_password("password123"), "Barbara Liskov", "Professor", "MEM105"),
+            # Also allow direct login by Member ID
+            ("MEM101", hash_password("password123"), "Alan Turing", "Researcher", "MEM101"),
+            ("MEM102", hash_password("password123"), "Ada Lovelace", "Fellow", "MEM102"),
+            ("MEM103", hash_password("password123"), "Grace Hopper", "Faculty", "MEM103"),
+            ("MEM104", hash_password("password123"), "Linus Torvalds", "Student", "MEM104"),
+            ("MEM105", hash_password("password123"), "Barbara Liskov", "Professor", "MEM105"),
+        ]
+        cursor.executemany("""
+            INSERT OR IGNORE INTO users (username, password_hash, full_name, role, member_id)
+            VALUES (?, ?, ?, ?, ?)
+        """, seed_users)
+        conn.commit()
+
     conn.close()
 

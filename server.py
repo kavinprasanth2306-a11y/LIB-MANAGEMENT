@@ -17,6 +17,7 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 # Instantiate In-Memory Data Structures
 book_ht = HashTable(capacity=17)
+user_ht = HashTable(capacity=17)
 search_trie = Trie()
 recently_viewed_dll = DoublyLinkedList()
 undo_stack = Stack()
@@ -37,6 +38,16 @@ def sync_memory_from_db():
         search_trie.insert(book_dict["title"], book_dict)
         search_trie.insert(book_dict["author"], book_dict)
         waitlist_queues[book_dict["isbn"]] = Queue()
+
+    # Load Users into custom Hash Table O(1)
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    for u in users:
+        u_dict = dict(u)
+        u_dict["is_admin"] = (u_dict["role"].lower() == "admin")
+        user_ht.insert(u_dict["username"].lower(), u_dict)
+        if u_dict.get("member_id"):
+            user_ht.insert(u_dict["member_id"].lower(), u_dict)
 
     # Load Waitlist Queues in chronological FIFO order
     cursor.execute("SELECT * FROM waitlists ORDER BY id ASC")
@@ -95,6 +106,20 @@ class LuminaRequestHandler(http.server.SimpleHTTPRequestHandler):
             members = [dict(m) for m in conn.cursor().execute("SELECT * FROM members").fetchall()]
             conn.close()
             self._send_json(200, {"success": True, "data": members})
+
+        elif path == "/api/users":
+            conn = db.get_connection()
+            users = [
+                {
+                    "username": r["username"],
+                    "full_name": r["full_name"],
+                    "role": r["role"],
+                    "member_id": r["member_id"]
+                }
+                for r in conn.cursor().execute("SELECT username, full_name, role, member_id FROM users").fetchall()
+            ]
+            conn.close()
+            self._send_json(200, {"success": True, "data": users})
 
         elif path == "/api/waitlist":
             res = {}
@@ -300,6 +325,85 @@ class LuminaRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json(200, {"success": True, "data": recently_viewed_dll.to_list()})
             else:
                 self._send_json(404, {"success": False, "message": "Book not found"})
+
+        elif self.path == "/api/login":
+            username = str(data.get("username", "")).strip().lower()
+            password = str(data.get("password", "")).strip()
+
+            if not username or not password:
+                self._send_json(400, {"success": False, "message": "Username and password are required."})
+                return
+
+            pwd_hash = db.hash_password(password)
+            user = user_ht.search(username)
+
+            if user and user.get("password_hash") == pwd_hash:
+                self._send_json(200, {
+                    "success": True,
+                    "message": f"Welcome back, {user['full_name']}!",
+                    "user": {
+                        "username": user["username"],
+                        "full_name": user["full_name"],
+                        "role": user["role"],
+                        "member_id": user.get("member_id", "MEM101"),
+                        "is_admin": user.get("is_admin", False)
+                    }
+                })
+            else:
+                self._send_json(401, {"success": False, "message": "Invalid username/ID or password."})
+
+        elif self.path == "/api/register":
+            username = str(data.get("username", "")).strip().lower()
+            password = str(data.get("password", "")).strip()
+            full_name = str(data.get("full_name", "")).strip()
+            role = str(data.get("role", "Student")).strip()
+
+            if not username or not password or not full_name:
+                self._send_json(400, {"success": False, "message": "All fields are required."})
+                return
+
+            if user_ht.search(username):
+                self._send_json(409, {"success": False, "message": "Username or Member ID already taken."})
+                return
+
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) as cnt FROM members")
+            next_num = cursor.fetchone()["cnt"] + 101
+            member_id = f"MEM{next_num}"
+            pwd_hash = db.hash_password(password)
+
+            cursor.execute("INSERT OR REPLACE INTO members (member_id, full_name, role) VALUES (?, ?, ?)",
+                           (member_id, full_name, role))
+            cursor.execute("INSERT INTO users (username, password_hash, full_name, role, member_id) VALUES (?, ?, ?, ?, ?)",
+                           (username, pwd_hash, full_name, role, member_id))
+            cursor.execute("INSERT OR IGNORE INTO users (username, password_hash, full_name, role, member_id) VALUES (?, ?, ?, ?, ?)",
+                           (member_id.lower(), pwd_hash, full_name, role, member_id))
+            conn.commit()
+            conn.close()
+
+            new_user = {
+                "username": username,
+                "password_hash": pwd_hash,
+                "full_name": full_name,
+                "role": role,
+                "member_id": member_id,
+                "is_admin": (role.lower() == "admin")
+            }
+            user_ht.insert(username, new_user)
+            user_ht.insert(member_id.lower(), new_user)
+
+            self._send_json(201, {
+                "success": True,
+                "message": f"Account created! Assigned Member ID: {member_id}",
+                "user": {
+                    "username": username,
+                    "full_name": full_name,
+                    "role": role,
+                    "member_id": member_id,
+                    "is_admin": new_user["is_admin"]
+                }
+            })
 
 
 def main():

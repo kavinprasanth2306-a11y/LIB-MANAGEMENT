@@ -265,13 +265,13 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center space-x-3">
-          <button onclick="openAddBookModal()" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
+          <button id="header-add-book-btn" onclick="openAddBookModal()" class="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>Add Book</span>
           </button>
-          <div class="w-9 h-9 rounded-xl bg-white border border-slate-200/80 shadow-sm flex items-center justify-center font-bold text-xs text-indigo-600">
-            AD
-          </div>
+          
+          <!-- User Authentication Widget -->
+          <div id="user-profile-widget" class="flex items-center space-x-2"></div>
         </div>
       </header>
 
@@ -762,6 +762,124 @@
 
 
   <!-- ======================================================== -->
+  <!-- MODAL: AUTHENTICATION (LOGIN & REGISTRATION) -->
+  <!-- ======================================================== -->
+  <div id="modal-auth" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-md w-full p-6 sm:p-7 rounded-3xl space-y-4 shadow-2xl border border-white relative">
+      
+      <!-- Close button (allows guest viewing) -->
+      <button onclick="closeAuthModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center space-x-3 pb-3 border-b border-slate-200/60">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/25">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-extrabold text-slate-900 leading-tight">LuminaLib Authentication</h3>
+          <p class="text-[11px] text-slate-500 font-mono mt-0.5">Role-Based Access Control • Hash Table O(1)</p>
+        </div>
+      </div>
+
+      <!-- Quick 1-Click Demo Accounts -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">1-Click Quick Demo Personas</span>
+          <span class="text-[9px] text-indigo-600 font-mono bg-indigo-50 px-2 py-0.5 rounded font-bold">Fast Review Access</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <button type="button" onclick="quickLogin('admin', 'admin123')" class="p-2.5 rounded-xl border border-indigo-200 bg-white/80 hover:bg-indigo-50 hover:border-indigo-300 transition text-left space-y-1 group">
+            <div class="flex items-center justify-between">
+              <span class="text-sm">👑</span>
+              <span class="text-[8px] font-mono font-bold px-1 py-0.2 bg-indigo-100 text-indigo-700 rounded">Admin</span>
+            </div>
+            <div class="font-bold text-slate-900 group-hover:text-indigo-600 truncate text-[11px]">Librarian</div>
+            <div class="text-[9px] text-slate-400 font-mono">admin123</div>
+          </button>
+
+          <button type="button" onclick="quickLogin('linus', 'password123')" class="p-2.5 rounded-xl border border-emerald-200 bg-white/80 hover:bg-emerald-50 hover:border-emerald-300 transition text-left space-y-1 group">
+            <div class="flex items-center justify-between">
+              <span class="text-sm">💻</span>
+              <span class="text-[8px] font-mono font-bold px-1 py-0.2 bg-emerald-100 text-emerald-700 rounded">MEM104</span>
+            </div>
+            <div class="font-bold text-slate-900 group-hover:text-emerald-600 truncate text-[11px]">Linus T.</div>
+            <div class="text-[9px] text-slate-400 font-mono">Student</div>
+          </button>
+
+          <button type="button" onclick="quickLogin('turing', 'password123')" class="p-2.5 rounded-xl border border-purple-200 bg-white/80 hover:bg-purple-50 hover:border-purple-300 transition text-left space-y-1 group">
+            <div class="flex items-center justify-between">
+              <span class="text-sm">🎓</span>
+              <span class="text-[8px] font-mono font-bold px-1 py-0.2 bg-purple-100 text-purple-700 rounded">MEM101</span>
+            </div>
+            <div class="font-bold text-slate-900 group-hover:text-purple-600 truncate text-[11px]">Alan Turing</div>
+            <div class="text-[9px] text-slate-400 font-mono">Researcher</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab Switch: Sign In vs Register -->
+      <div class="flex rounded-xl bg-slate-100/80 p-1 text-xs font-bold text-slate-600">
+        <button id="auth-tab-signin" type="button" onclick="switchAuthTab('signin')" class="flex-1 py-1.5 rounded-lg bg-white text-indigo-600 shadow-xs transition">
+          Sign In
+        </button>
+        <button id="auth-tab-register" type="button" onclick="switchAuthTab('register')" class="flex-1 py-1.5 rounded-lg hover:text-slate-900 transition">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Form: Sign In -->
+      <form id="form-auth-signin" onsubmit="handleSignInSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Username or Member ID</label>
+          <input required id="signin-username" type="text" placeholder="e.g. admin or MEM104 or linus" class="w-full glass-input rounded-xl p-2.5 font-mono text-slate-900" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Password</label>
+          <input required id="signin-password" type="password" placeholder="••••••••" class="w-full glass-input rounded-xl p-2.5 font-mono text-slate-900" />
+        </div>
+        <button type="submit" id="signin-submit-btn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-600/20 transition flex items-center justify-center space-x-2">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span>Sign In to LuminaLib</span>
+        </button>
+      </form>
+
+      <!-- Form: Register (Hidden by default) -->
+      <form id="form-auth-register" onsubmit="handleRegisterSubmit(event)" class="space-y-3 text-xs hidden">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Full Name</label>
+          <input required id="register-fullname" type="text" placeholder="e.g. John Doe" class="w-full glass-input rounded-xl p-2.5 text-slate-900" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Username</label>
+            <input required id="register-username" type="text" placeholder="e.g. jdoe" class="w-full glass-input rounded-xl p-2.5 font-mono text-slate-900" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Role</label>
+            <select id="register-role" class="w-full glass-input rounded-xl p-2.5 font-medium text-slate-900">
+              <option value="Student">Student</option>
+              <option value="Faculty">Faculty</option>
+              <option value="Researcher">Researcher</option>
+              <option value="admin">Admin / Librarian</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Create Password</label>
+          <input required id="register-password" type="password" placeholder="At least 4 characters" minlength="4" class="w-full glass-input rounded-xl p-2.5 font-mono text-slate-900" />
+        </div>
+        <button type="submit" id="register-submit-btn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md shadow-emerald-600/20 transition flex items-center justify-center space-x-2">
+          <i data-lucide="user-plus" class="w-4 h-4"></i>
+          <span>Create Account & Log In</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
   <!-- JAVASCRIPT: DATA STRUCTURES & APPLICATION LOGIC -->
   <!-- ======================================================== -->
   <script>
@@ -1145,11 +1263,20 @@
     // APPLICATION STATE (INSTANTIATED DATA STRUCTURES)
     // =========================================================
     const bookHashTable = new HashTable(11);
+    const userHashTable = new HashTable(11);
     const searchTrie = new Trie();
     const viewedBooksDll = new DoublyLinkedList();
     const actionUndoStack = new Stack();
     const waitlistQueues = {}; // Map of ISBN -> Queue()
     const transactionHistoryDll = new DoublyLinkedList();
+
+    let currentUser = null;
+    try {
+      const savedUser = localStorage.getItem("lumina_user");
+      if (savedUser) currentUser = JSON.parse(savedUser);
+    } catch (e) {
+      currentUser = null;
+    }
 
     // 14 Pre-Loaded Computer Science Classics
     const MOCK_BOOKS = [
@@ -1195,6 +1322,21 @@
       // Seed initial transactions
       transactionHistoryDll.append({ id: "TXN-01", type: "ISSUE", isbn: "978-1119800361", title: "Operating System Concepts", memberId: "MEM101", time: "Yesterday" });
       transactionHistoryDll.append({ id: "TXN-02", type: "ISSUE", isbn: "978-0134092669", title: "Computer Systems (CSAPP)", memberId: "MEM105", time: "Today, 08:30" });
+
+      // Seed initial users into User Hash Table (O(1) lookups for authentication)
+      const MOCK_USERS = [
+        { username: "admin", password: "admin123", fullName: "Head Librarian", role: "admin", memberId: "ADMIN", isAdmin: true },
+        { username: "linus", password: "password123", fullName: "Linus Torvalds", role: "Student", memberId: "MEM104", isAdmin: false },
+        { username: "turing", password: "password123", fullName: "Alan Turing", role: "Researcher", memberId: "MEM101", isAdmin: false },
+        { username: "ada", password: "password123", fullName: "Ada Lovelace", role: "Fellow", memberId: "MEM102", isAdmin: false },
+        { username: "grace", password: "password123", fullName: "Grace Hopper", role: "Faculty", memberId: "MEM103", isAdmin: false },
+        { username: "liskov", password: "password123", fullName: "Barbara Liskov", role: "Professor", memberId: "MEM105", isAdmin: false },
+        { username: "MEM101", password: "password123", fullName: "Alan Turing", role: "Researcher", memberId: "MEM101", isAdmin: false },
+        { username: "MEM104", password: "password123", fullName: "Linus Torvalds", role: "Student", memberId: "MEM104", isAdmin: false },
+      ];
+      MOCK_USERS.forEach(u => {
+        userHashTable.set(u.username.toLowerCase(), u);
+      });
     }
 
     // =========================================================
@@ -1436,15 +1578,24 @@
     function populateDeskDropdowns() {
       const issueSelect = document.getElementById("desk-issue-book-select");
       const returnSelect = document.getElementById("desk-return-book-select");
+      const memberSelect = document.getElementById("desk-issue-member-select");
+      const returnMemberInput = document.getElementById("desk-return-member");
       const books = bookHashTable.getAll();
 
-      issueSelect.innerHTML = books.map(b => `
-        <option value="${b.isbn}">${b.title} (${b.availableCopies} available) - [${b.isbn}]</option>
-      `).join("");
+      if (issueSelect && returnSelect) {
+        issueSelect.innerHTML = books.map(b => `
+          <option value="${b.isbn}">${b.title} (${b.availableCopies} available) - [${b.isbn}]</option>
+        `).join("");
 
-      returnSelect.innerHTML = books.map(b => `
-        <option value="${b.isbn}">${b.title} - [${b.isbn}]</option>
-      `).join("");
+        returnSelect.innerHTML = books.map(b => `
+          <option value="${b.isbn}">${b.title} - [${b.isbn}]</option>
+        `).join("");
+
+        if (currentUser && currentUser.memberId) {
+          if (memberSelect) memberSelect.value = currentUser.memberId;
+          if (returnMemberInput) returnMemberInput.value = currentUser.memberId;
+        }
+      }
     }
 
     function handleIssueSubmit() {
@@ -1453,7 +1604,13 @@
       quickActionCheckout(isbn, memberId);
     }
 
-    function quickActionCheckout(isbn, memberId = "MEM101") {
+    function quickActionCheckout(isbn, memberId = null) {
+      if (!currentUser) {
+        showToast("Sign In Required", "Please sign in to borrow or join the waitlist.", "warning");
+        openAuthModal();
+        return;
+      }
+      const targetMemberId = memberId || currentUser.memberId || "MEM101";
       const book = bookHashTable.get(isbn);
       if (!book) return;
 
@@ -1461,8 +1618,8 @@
         // Enqueue into FIFO Waitlist Queue
         if (!waitlistQueues[isbn]) waitlistQueues[isbn] = new Queue();
         waitlistQueues[isbn].enqueue({
-          memberId,
-          name: memberId === 'MEM101' ? 'Alan Turing' : memberId,
+          memberId: targetMemberId,
+          name: currentUser.fullName || targetMemberId,
           timestamp: new Date().toLocaleTimeString()
         });
 
@@ -1470,11 +1627,11 @@
         actionUndoStack.push({
           type: "ENQUEUE_WAITLIST",
           isbn,
-          memberId,
-          description: `Waitlisted ${memberId} for "${book.title}"`
+          memberId: targetMemberId,
+          description: `Waitlisted ${targetMemberId} for "${book.title}"`
         });
 
-        showToast("Joined Waitlist (FIFO Queue)", `"${book.title}" is out of stock. Added ${memberId} to FIFO Queue.`, "warning");
+        showToast("Joined Waitlist (FIFO Queue)", `"${book.title}" is out of stock. Added ${targetMemberId} to FIFO Queue.`, "warning");
         updateMetrics();
         return;
       }
@@ -1489,7 +1646,7 @@
         type: "ISSUE",
         isbn: book.isbn,
         title: book.title,
-        memberId,
+        memberId: targetMemberId,
         time: "Just now"
       });
 
@@ -1497,11 +1654,11 @@
       actionUndoStack.push({
         type: "ISSUE_BOOK",
         isbn,
-        memberId,
-        description: `Issued "${book.title}" to ${memberId}`
+        memberId: targetMemberId,
+        description: `Issued "${book.title}" to ${targetMemberId}`
       });
 
-      showToast("Checkout Confirmed", `Successfully issued "${book.title}" to ${memberId}.`, "success");
+      showToast("Checkout Confirmed", `Successfully issued "${book.title}" to ${targetMemberId}.`, "success");
       renderFullCatalog();
       populateDeskDropdowns();
       updateMetrics();
@@ -1571,6 +1728,11 @@
     // UNDO LAST ACTION (STACK LIFO IMPLEMENTATION)
     // =========================================================
     function executeUndoAction() {
+      if (currentUser && !currentUser.isAdmin) {
+        showToast("Admin Privilege Required", "Only the Librarian / Admin can undo global library actions.", "warning");
+        return;
+      }
+
       if (actionUndoStack.isEmpty()) {
         showToast("Undo Stack Empty", "No recent actions to undo.", "warning");
         return;
@@ -1780,7 +1942,158 @@
       document.getElementById("sidebar-hash-count").innerText = allBooks.length;
     }
 
+    // =========================================================
+    // AUTHENTICATION & ROLE-BASED ACCESS CONTROL (RBAC)
+    // =========================================================
+    function updateUserUi() {
+      const widget = document.getElementById("user-profile-widget");
+      const addBtn = document.getElementById("header-add-book-btn");
+
+      if (!widget) return;
+
+      if (currentUser) {
+        const isAdm = currentUser.isAdmin || (currentUser.role && currentUser.role.toLowerCase() === "admin");
+        const initial = (currentUser.fullName || currentUser.username || "U").charAt(0).toUpperCase();
+
+        widget.innerHTML = `
+          <div class="flex items-center space-x-2.5 bg-white/80 border border-slate-200/80 rounded-2xl px-3 py-1.5 shadow-xs">
+            <div class="w-7 h-7 rounded-xl bg-gradient-to-tr ${isAdm ? 'from-indigo-600 to-purple-600' : 'from-emerald-500 to-teal-500'} text-white flex items-center justify-center font-bold text-xs shadow-xs">
+              ${initial}
+            </div>
+            <div class="text-left text-xs leading-tight">
+              <div class="font-extrabold text-slate-900 truncate max-w-[110px]">${currentUser.fullName || currentUser.username}</div>
+              <div class="text-[10px] font-mono ${isAdm ? 'text-indigo-600 font-bold' : 'text-slate-500'}">
+                ${isAdm ? '👑 Librarian' : `${currentUser.role || 'Member'} (${currentUser.memberId || 'ID'})`}
+              </div>
+            </div>
+            <button onclick="handleLogout()" title="Switch Account / Sign Out" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition ml-0.5">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+
+        if (addBtn) {
+          if (isAdm) addBtn.classList.remove("hidden");
+          else addBtn.classList.add("hidden");
+        }
+      } else {
+        widget.innerHTML = `
+          <button onclick="openAuthModal()" class="flex items-center space-x-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition">
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+            <span>Sign In</span>
+          </button>
+        `;
+        if (addBtn) addBtn.classList.add("hidden");
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openAuthModal() {
+      const modal = document.getElementById("modal-auth");
+      if (modal) modal.classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeAuthModal() {
+      document.getElementById("modal-auth")?.classList.add("hidden");
+    }
+
+    function switchAuthTab(tab) {
+      const signinForm = document.getElementById("form-auth-signin");
+      const registerForm = document.getElementById("form-auth-register");
+      const tabSignin = document.getElementById("auth-tab-signin");
+      const tabRegister = document.getElementById("auth-tab-register");
+
+      if (tab === "signin") {
+        signinForm?.classList.remove("hidden");
+        registerForm?.classList.add("hidden");
+        if (tabSignin) tabSignin.className = "flex-1 py-1.5 rounded-lg bg-white text-indigo-600 shadow-xs transition";
+        if (tabRegister) tabRegister.className = "flex-1 py-1.5 rounded-lg hover:text-slate-900 transition";
+      } else {
+        signinForm?.classList.add("hidden");
+        registerForm?.classList.remove("hidden");
+        if (tabRegister) tabRegister.className = "flex-1 py-1.5 rounded-lg bg-white text-emerald-600 shadow-xs transition";
+        if (tabSignin) tabSignin.className = "flex-1 py-1.5 rounded-lg hover:text-slate-900 transition";
+      }
+    }
+
+    function quickLogin(username, password) {
+      const uInput = document.getElementById("signin-username");
+      const pInput = document.getElementById("signin-password");
+      if (uInput) uInput.value = username;
+      if (pInput) pInput.value = password;
+      performLogin(username, password);
+    }
+
+    function handleSignInSubmit(e) {
+      e.preventDefault();
+      const username = document.getElementById("signin-username").value.trim().toLowerCase();
+      const password = document.getElementById("signin-password").value.trim();
+      performLogin(username, password);
+    }
+
+    function performLogin(username, password) {
+      const user = userHashTable.get(username.toLowerCase());
+      if (user && user.password === password) {
+        currentUser = { ...user };
+        localStorage.setItem("lumina_user", JSON.stringify(currentUser));
+        closeAuthModal();
+        updateUserUi();
+        populateDeskDropdowns();
+        showToast("Signed In", `Logged in as ${currentUser.fullName} (${currentUser.role})`, "success");
+      } else {
+        showToast("Login Failed", "Invalid username or password.", "error");
+      }
+    }
+
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const fullName = document.getElementById("register-fullname").value.trim();
+      const username = document.getElementById("register-username").value.trim().toLowerCase();
+      const role = document.getElementById("register-role").value;
+      const password = document.getElementById("register-password").value.trim();
+
+      if (userHashTable.get(username)) {
+        showToast("Username Taken", "Please choose a different username.", "warning");
+        return;
+      }
+
+      const memberId = `MEM${Math.floor(Math.random() * 800 + 200)}`;
+      const newUser = {
+        username,
+        password,
+        fullName,
+        role,
+        memberId,
+        isAdmin: (role.toLowerCase() === "admin")
+      };
+
+      userHashTable.set(username, newUser);
+      userHashTable.set(memberId.toLowerCase(), newUser);
+
+      currentUser = { ...newUser };
+      localStorage.setItem("lumina_user", JSON.stringify(currentUser));
+      closeAuthModal();
+      updateUserUi();
+      populateDeskDropdowns();
+      showToast("Account Created", `Welcome, ${fullName}! Member ID: ${memberId}`, "success");
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem("lumina_user");
+      updateUserUi();
+      populateDeskDropdowns();
+      showToast("Signed Out", "You have signed out. Sign in to borrow books.", "info");
+      openAuthModal();
+    }
+
     function openAddBookModal() {
+      if (currentUser && !currentUser.isAdmin) {
+        showToast("Admin Privilege Required", "Only the Librarian / Admin can add books to the catalog.", "warning");
+        return;
+      }
       document.getElementById("modal-add-book").classList.remove("hidden");
     }
     function closeAddBookModal() {
@@ -1836,6 +2149,7 @@
       renderDllChain();
       populateDeskDropdowns();
       updateMetrics();
+      updateUserUi();
       if (window.lucide) lucide.createIcons();
     });
   </script>
